@@ -33,7 +33,11 @@
   .wrap{max-width:920px;margin:0 auto;padding:40px 24px 80px;}
 
   /* MODO PACIENTE - Ocultar elementos técnicos */
-  body.modo-paciente .prof-only { display: none !important; }
+  body.modo-paciente .prof-only,
+  body.modo-paciente .tabs button[data-tab="t2"],
+  body.modo-paciente .tabs button[data-tab="t3"],
+  body.modo-paciente .tabs button[data-tab="t4"],
+  body.modo-paciente .tabs button[data-tab="t5"] { display: none !important; }
 
   /* HEADER */
   header{
@@ -70,16 +74,6 @@
     border-radius:var(--radius);
     padding:20px;
     margin-bottom:28px;
-    display:none;
-  }
-  .security-section.prof-only{
-    display:block;
-  }
-  .security-section h3{
-    margin:0 0 16px;
-    font-size:14px;
-    font-weight:600;
-    color:var(--green-deep);
   }
   .security-grid{
     display:grid;
@@ -106,28 +100,6 @@
   .security-grid button:hover{
     background:var(--green-deep);
   }
-
-  /* VISIT TRACKER */
-  .visit-tracker{
-    display:flex;
-    gap:0;
-    margin:28px 0 36px;
-    border:1px solid var(--line);
-    background:var(--panel);
-    border-radius:var(--radius);
-    overflow:hidden;
-  }
-  .visit-col{
-    flex:1;
-    padding:14px 18px;
-    border-right:1px solid var(--line);
-    position:relative;
-  }
-  .visit-col:last-child{border-right:none;}
-  .visit-col.active{background:var(--green);color:#fff;}
-  .visit-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin-bottom:4px;}
-  .visit-date{font-family:'Fraunces',serif;font-size:17px;}
-  .visit-col.active .visit-label{opacity:.85;}
 
   /* TABS */
   nav.tabs{
@@ -179,8 +151,7 @@
   .full{grid-column:1/-1;}
 
   label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px;letter-spacing:.01em;}
-  label .opt{font-weight:400;color:var(--ink-soft);text-transform:none;}
-  input[type=text], input[type=date], input[type=number], input[type=file], select, textarea{
+  input[type=text], input[type=date], input[type=number], input[type=file], input[type=password], select, textarea{
     width:100%;
     padding:10px 12px;
     font-family:'Work Sans',sans-serif;
@@ -190,21 +161,7 @@
     background:var(--panel);
     color:var(--ink);
   }
-  input:focus, select:focus, textarea:focus{
-    outline:none;
-    border-color:var(--green);
-    box-shadow:0 0 0 3px rgba(53,71,47,.12);
-  }
   textarea{resize:vertical;min-height:70px;}
-  .field{margin-bottom:0;}
-
-  /* TABLA ANTROPOMETRÍA */
-  .antro-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px;}
-  .antro-table th, .antro-table td{border:1px solid var(--line);padding:9px 10px;text-align:left;}
-  .antro-table th{background:var(--ochre-soft);color:var(--green-deep);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
-  .antro-table td input{border:none;padding:2px;width:100%;background:transparent;}
-  .antro-table tr:nth-child(even){background:#FBF8F2;}
-  .antro-table td.current{background:#F2ECDD;}
 
   /* FIRMA DIGITAL */
   .signature-box{
@@ -236,27 +193,6 @@
     border-radius:var(--radius);
     cursor:pointer;
     font-weight:600;
-    font-size:13px;
-  }
-  .signature-buttons button:hover{
-    background:var(--ochre-soft);
-  }
-
-  /* CARGA DE ARCHIVOS */
-  .file-upload{
-    border:2px dashed var(--green);
-    border-radius:var(--radius);
-    padding:20px;
-    text-align:center;
-    cursor:pointer;
-    transition:all .3s;
-  }
-  .file-upload:hover{
-    background:var(--ochre-soft);
-    border-color:var(--ochre);
-  }
-  .file-upload input[type=file]{
-    display:none;
   }
 
   /* QR MODAL */
@@ -272,115 +208,41 @@
     align-items:center;
     justify-content:center;
   }
-  .qr-modal.active{
-    display:flex;
-  }
+  .qr-modal.active{ display:flex; }
   .qr-content{
     background:white;
     border-radius:var(--radius);
     padding:40px;
     text-align:center;
     max-width:500px;
-    box-shadow:0 10px 40px rgba(0,0,0,.2);
   }
-  .qr-content h2{
-    margin:0 0 20px;
-    color:var(--green-deep);
-  }
-  #qrcode{
-    margin:20px 0;
-  }
-  .qr-close{
-    margin-top:20px;
-    padding:10px 20px;
-    background:var(--green);
-    color:white;
-    border:none;
-    border-radius:var(--radius);
-    cursor:pointer;
-    font-weight:600;
-  }
+  #qrcode{ margin:20px auto; display:flex; justify-content:center; }
 
-  /* FIELDSET */
-  fieldset{border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin:0;}
-  fieldset legend{font-size:12.5px;font-weight:600;padding:0 6px;color:var(--green-deep);}
-  .radio-row{display:flex;gap:18px;margin-top:6px;}
-  .radio-row label{display:flex;align-items:center;gap:6px;font-weight:400;margin:0;}
-  .radio-row input{width:auto;}
-
-  .divider{height:1px;background:var(--line);margin:26px 0;}
-
-  .consent-box{
-    background:#FBF8F2;
-    border:1px solid var(--line);
-    border-left:4px solid var(--ochre);
-    border-radius:var(--radius);
-    padding:16px 18px;
-    font-size:13px;
-    color:var(--ink-soft);
-    line-height:1.6;
-  }
-  .consent-box label{display:flex;align-items:flex-start;gap:10px;font-weight:500;color:var(--ink);margin-top:12px;}
-  .consent-box input{width:auto;margin-top:2px;}
-
-  /* BOTONES DE ACCIÓN */
+  /* BOTONES */
   .form-actions{
     display:flex;
     justify-content:space-between;
-    align-items:center;
     margin-top:36px;
     padding-top:20px;
     border-top:1px solid var(--line);
-    flex-wrap:wrap;
-    gap:12px;
   }
   .btn{
     font-family:'Work Sans',sans-serif;
     font-weight:600;
-    font-size:13.5px;
     padding:11px 22px;
     border-radius:var(--radius);
     border:1px solid var(--green);
-    background:none;
-    color:var(--green-deep);
     cursor:pointer;
   }
   .btn.primary{background:var(--green);color:#fff;border-color:var(--green);}
-  .btn.primary:hover{background:var(--green-deep);}
-  .btn.ghost{border-color:transparent;color:var(--ink-soft);}
+  .btn.primary:disabled{background:var(--ink-soft);border-color:var(--ink-soft);cursor:not-allowed;}
   .btn.qr{background:var(--ochre);color:white;border-color:var(--ochre);}
-  .btn.qr:hover{background:var(--ochre-soft);color:var(--green-deep);}
-  .btn:disabled{opacity:.35;cursor:not-allowed;}
-
-  .progress-note{font-size:12px;color:var(--ink-soft);text-align:center;margin-top:14px;}
-
-  /* MENSAJES */
-  .alert{
-    padding:12px 16px;
-    border-radius:var(--radius);
-    margin-bottom:16px;
-    font-size:13px;
-  }
-  .alert.success{
-    background:#D4EDDA;
-    color:#155724;
-    border:1px solid #C3E6CB;
-  }
-  .alert.error{
-    background:#F8D7DA;
-    color:#721C24;
-    border:1px solid #F5C6CB;
-  }
+  .btn.ghost{background:transparent;color:var(--ink-soft);border-color:var(--line);}
 
   @media (max-width:640px){
     .grid, .grid.g3{grid-template-columns:1fr;}
-    header{flex-direction:column;align-items:flex-start;gap:12px;}
-    .meta-box{text-align:left;}
-    .visit-tracker{flex-direction:column;}
-    .visit-col{border-right:none;border-bottom:1px solid var(--line);}
     .security-grid{grid-template-columns:1fr;}
-    .form-actions{flex-direction:column;}
-    .btn{width:100%;}
+    .form-actions{flex-direction:column; gap:10px;}
   }
 </style>
 </head>
@@ -393,412 +255,296 @@
       <h1>NutriRegistros Pro</h1>
     </div>
     <div class="meta-box prof-only">
-      <strong id="profesionalName">Lic. [CÉSAR BUSTOS]</strong>
-      Registro Nº ————<br>
+      <strong id="profNameDisplay">Lic. Control Nutricional</strong>
+      <span id="profRegDisplay">Registro Activo Backend V3</span><br>
       <span id="consultaDate"></span>
     </div>
   </header>
 
-  <!-- SEGURIDAD: PIN Y BÚSQUEDA POR DNI (Solo Profesional) -->
+  <!-- SEGURIDAD: PIN Y BÚSQUEDA (Solo Profesional) -->
   <div class="security-section prof-only">
-    <h3>🔒 Acceso Profesional</h3>
     <div class="security-grid">
       <div>
-        <label style="margin-bottom:6px; font-size:12px;">PIN de Acceso</label>
-        <input type="password" id="pinInput" placeholder="Ingresa tu PIN (4 dígitos)" maxlength="4">
+        <label>PIN de Acceso</label>
+        <input type="password" id="pinInput" placeholder="PIN (4 dígitos)" maxlength="4">
       </div>
       <div>
-        <label style="margin-bottom:6px; font-size:12px;">Buscar Paciente (DNI)</label>
-        <input type="text" id="dniSearch" placeholder="12.345.678-9" disabled>
+        <label>Buscar Paciente Histórico (DNI)</label>
+        <input type="text" id="dniSearch" placeholder="12345678" disabled>
       </div>
       <button onclick="buscarPaciente()" disabled id="btnBuscar">Buscar</button>
     </div>
   </div>
 
-  <!-- TRACKER DE VISITAS -->
-  <div class="visit-tracker">
-    <div class="visit-col active">
-      <div class="visit-label">Ingreso</div>
-      <div class="visit-date" id="visitDate1">— pendiente —</div>
-    </div>
-    <div class="visit-col">
-      <div class="visit-label">1er Control</div>
-      <div class="visit-date" id="visitDate2">— pendiente —</div>
-    </div>
-    <div class="visit-col">
-      <div class="visit-label">2do Control</div>
-      <div class="visit-date" id="visitDate3">— pendiente —</div>
-    </div>
-  </div>
-
-  <!-- TABS DE NAVEGACIÓN -->
+  <!-- TABS -->
   <nav class="tabs">
     <button class="active" data-tab="t1"><span class="num">01</span>Datos y anamnesis</button>
-    <button data-tab="t2"><span class="num">02</span>Antropometría</button>
-    <button data-tab="t3"><span class="num">03</span>Indicadores bioquímicos</button>
-    <button data-tab="t4"><span class="num">04</span>Recordatorio 24h</button>
-    <button data-tab="t5" class="prof-only"><span class="num">05</span>Diagnóstico</button>
-    <button data-tab="t6"><span class="num">06</span>Consentimiento</button>
+    <button data-tab="t2" class="prof-only"><span class="num">02</span>Antropometría</button>
+    <button data-tab="t5" class="prof-only"><span class="num">03</span>Diagnóstico</button>
+    <button data-tab="t6"><span class="num">04</span>Consentimiento</button>
   </nav>
 
-  <!-- PANEL 1: DATOS Y ANAMNESIS -->
+  <!-- PANEL 1: DATOS -->
   <div class="panel active" id="t1">
-    <p class="section-title">Datos generales y anamnesis</p>
-    <p class="section-sub">Información básica del paciente y contexto social/médico.</p>
-
+    <p class="section-title">Datos generales</p>
     <div class="grid">
-      <div class="field"><label>Nombre completo</label><input type="text" id="nombrePaciente" placeholder="Nombre y apellidos"></div>
-      <div class="field"><label>RUT / Documento</label><input type="text" id="dniPaciente" placeholder="12.345.678-9"></div>
-      <div class="field"><label>Fecha de nacimiento</label><input type="date" id="fechaNacimiento"></div>
-      <div class="field"><label>Edad</label><input type="number" id="edadPaciente" placeholder="Años"></div>
-      <div class="field"><label>Ocupación</label><input type="text" id="ocupacionPaciente"></div>
-      <div class="field"><label>¿Con quién vive?</label><input type="text" id="convivencia"></div>
-      <div class="field full"><label>Motivo de consulta</label><textarea id="motivoConsulta" placeholder="Describe brevemente..."></textarea></div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="grid g3">
-      <div class="field">
-        <label>Actividad física</label>
-        <select id="actividadFisica"><option>Sedentario</option><option>Ligera (1-2x/sem)</option><option>Moderada (3-4x/sem)</option><option>Intensa (5+/sem)</option></select>
-      </div>
-      <div class="field"><label>Experiencia previa con nutricionista</label>
-        <div class="radio-row">
-          <label><input type="radio" name="prevnutri" value="Sí"> Sí</label>
-          <label><input type="radio" name="prevnutri" value="No"> No</label>
-        </div>
-      </div>
-      <div class="field"><label>Medicamentos actuales <span class="opt">(opcional)</span></label><input type="text" id="medicamentos"></div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="grid">
-      <div class="field"><label>Antecedentes mórbidos personales</label><textarea id="antecedentesPersonales" placeholder="Diabetes, hipertensión..."></textarea></div>
-      <div class="field"><label>Antecedentes quirúrgicos</label><textarea id="antecedentesQuirurgicos" placeholder="Cirugías relevantes..."></textarea></div>
-      <div class="field full"><label>Antecedentes familiares</label><textarea id="antecedenteFamiliares" placeholder="Enfermedades hereditarias..."></textarea></div>
+      <div class="field"><label>Nombre completo</label><input type="text" id="nombrePaciente"></div>
+      <div class="field"><label>RUT / Documento (DNI)</label><input type="text" id="dniPaciente"></div>
+      <div class="field"><label>Fecha de nacimiento</label><input type="date" id="fechaNac"></div>
+      <div class="field"><label>Edad</label><input type="number" id="edadPac"></div>
+      <div class="field full"><label>Motivo de consulta</label><textarea id="motivo"></textarea></div>
     </div>
   </div>
 
   <!-- PANEL 2: ANTROPOMETRÍA -->
-  <div class="panel" id="t2">
-    <p class="section-title">Evaluación antropométrica</p>
-    <p class="section-sub">Se registra en cada visita para comparar la evolución.</p>
-
-    <table class="antro-table">
-      <thead>
-        <tr><th>Medición</th><th class="current">Ingreso</th><th>1er control</th><th>2do control</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Peso habitual (kg)</td><td class="current"><input type="text" class="ingreso"></td><td><input type="text"></td><td><input type="text"></td></tr>
-        <tr><td>Peso actual (kg)</td><td class="current"><input type="text" class="ingreso" id="pesoActual"></td><td><input type="text"></td><td><input type="text"></td></tr>
-        <tr><td>Estatura (cm)</td><td class="current"><input type="text" class="ingreso" id="estatura"></td><td><input type="text"></td><td><input type="text"></td></tr>
-        <tr><td>IMC</td><td class="current"><input type="text" id="imc" placeholder="auto" readonly></td><td><input type="text" placeholder="auto" readonly></td><td><input type="text" placeholder="auto" readonly></td></tr>
-        <tr><td>Circ. cintura (cm)</td><td class="current"><input type="text" class="ingreso"></td><td><input type="text"></td><td><input type="text"></td></tr>
-        <tr><td>Circ. pantorrilla (cm)</td><td class="current"><input type="text" class="ingreso"></td><td><input type="text"></td><td><input type="text"></td></tr>
-        <tr><td>Circ. braquial (cm)</td><td class="current"><input type="text" class="ingreso"></td><td><input type="text"></td><td><input type="text"></td></tr>
-      </tbody>
-    </table>
-    <p class="progress-note">El IMC se calculará automáticamente: peso(kg) / estatura(m)²</p>
-  </div>
-
-  <!-- PANEL 3: INDICADORES BIOQUÍMICOS -->
-  <div class="panel" id="t3">
-    <p class="section-title">Indicadores bioquímicos</p>
-    <p class="section-sub">Resultados de laboratorio aportados por el paciente.</p>
-
-    <table class="antro-table">
-      <thead><tr><th>Examen</th><th>Valor</th><th>Rango normal</th><th>Interpretación</th></tr></thead>
-      <tbody>
-        <tr><td>Glicemia</td><td><input type="text" id="glicemia"></td><td>70–100 mg/dl</td><td><input type="text" placeholder="Normal / Alterado"></td></tr>
-        <tr><td>Colesterol total</td><td><input type="text" id="colesterol"></td><td>&lt;200 mg/dl</td><td><input type="text"></td></tr>
-        <tr><td>Triglicéridos</td><td><input type="text" id="trigliceridos"></td><td>&lt;150 mg/dl</td><td><input type="text"></td></tr>
-        <tr><td>HbA1c</td><td><input type="text" id="hba1c"></td><td>&lt;7%</td><td><input type="text"></td></tr>
-        <tr><td>Otro</td><td><input type="text" id="otro"></td><td><input type="text"></td><td><input type="text"></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- PANEL 4: RECORDATORIO 24H -->
-  <div class="panel" id="t4">
-    <p class="section-title">Recordatorio de 24 horas</p>
-    <p class="section-sub">Registro de todos los alimentos consumidos el día previo.</p>
-
+  <div class="panel prof-only" id="t2">
+    <p class="section-title">Antropometría</p>
     <div class="grid">
-      <div class="field full"><label>Desayuno</label><textarea id="desayuno" placeholder="Hora y detalle de alimentos..."></textarea></div>
-      <div class="field full"><label>Media mañana</label><textarea id="mediaMañana"></textarea></div>
-      <div class="field full"><label>Almuerzo</label><textarea id="almuerzo"></textarea></div>
-      <div class="field full"><label>Once / Merienda</label><textarea id="merienda"></textarea></div>
-      <div class="field full"><label>Cena</label><textarea id="cena"></textarea></div>
-      <div class="field full"><label>Otros (snacks, líquidos, alcohol)</label><textarea id="otros"></textarea></div>
+      <div class="field"><label>Peso Actual (kg)</label><input type="number" id="peso" step="0.1"></div>
+      <div class="field"><label>Estatura (cm)</label><input type="number" id="talla" step="1"></div>
+      <div class="field"><label>IMC (Calculado)</label><input type="text" id="imc" readonly style="background:#f4f4f4; font-weight:bold;"></div>
     </div>
   </div>
 
-  <!-- PANEL 5: DIAGNÓSTICO (Solo Profesional) -->
+  <!-- PANEL 5: DIAGNÓSTICO -->
   <div class="panel prof-only" id="t5">
-    <p class="section-title">Diagnóstico e indicaciones</p>
-    <p class="section-sub">Diagnóstico Nutricional Integrado (DNI) y plan de trabajo.</p>
-
+    <p class="section-title">Diagnóstico Nutricional Integrado</p>
     <div class="grid">
-      <div class="field full"><label>Diagnóstico nutricional integrado (DNI)</label><textarea id="dni" placeholder="Ej: Malnutrición por exceso..."></textarea></div>
-      <div class="field"><label>Requerimiento energético (kcal)</label><input type="number" id="requerimiento"></div>
-      <div class="field"><label>Distribución de macronutrientes</label><input type="text" id="macros" placeholder="Ej: 50% HC / 20% PROT / 30% LIP"></div>
-      <div class="field full"><label>Plan de trabajo / Indicaciones</label><textarea id="planTrabajo" placeholder="Detallar objetivos y recomendaciones..."></textarea></div>
+      <div class="field full"><label>Diagnóstico (DNI)</label><textarea id="diagnosticoDNI" placeholder="Describa el diagnóstico nutricional..."></textarea></div>
+      <div class="field full"><label>Plan de Trabajo</label><textarea id="planTrabajo"></textarea></div>
     </div>
   </div>
 
   <!-- PANEL 6: CONSENTIMIENTO -->
   <div class="panel" id="t6">
-    <p class="section-title">Consentimiento informado</p>
-    <p class="section-sub">Aceptación del paciente y firma digital.</p>
-
-    <div class="consent-box">
-      <p><strong>Declaración de Consentimiento Informado</strong></p>
-      <p>Yo, <strong id="nombreConsentimiento">el paciente</strong>, declaro que he sido informado sobre el proceso de evaluación nutricional y acepto participar voluntariamente en el mismo. He entendido los riesgos y beneficios de la intervención nutricional propuesta.</p>
-      <p>Autorizo al profesional a utilizar mis datos clínicos de forma confidencial para fines de seguimiento y mejora de mi salud.</p>
-      
-      <label><input type="checkbox" id="consentimientoCheck"> Acepto los términos y condiciones</label>
-      <label><input type="checkbox" id="privacidadCheck"> Autorizo el tratamiento de mis datos personales</label>
+    <p class="section-title">Consentimiento y Firma</p>
+    <div class="consent-box" style="margin-bottom:15px;">
+      <p>Acepto el tratamiento nutricional y autorizo el uso de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
+      <label><input type="checkbox" id="checkConsent"> Acepto términos y condiciones</label>
     </div>
-
-    <label style="margin-top:20px;">Firma Digital</label>
     <div class="signature-box">
+      <label>Firme dentro del recuadro:</label>
       <canvas id="signaturePad"></canvas>
       <div class="signature-buttons">
-        <button onclick="limpiarFirma()">Limpiar</button>
-        <button onclick="guardarFirma()">Guardar Firma</button>
+        <button type="button" onclick="limpiarFirma()">Limpiar Firma</button>
       </div>
     </div>
-
-    <label style="margin-top:20px;">Adjuntar foto (DNI, Estudios, etc.)</label>
-    <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-      <p>📎 Haz clic para subir una foto o arrastra aquí</p>
-      <input type="file" id="fileInput" accept="image/*">
-    </div>
-    <p id="fileNameDisplay" style="font-size:12px; color:var(--ink-soft); margin-top:8px;"></p>
   </div>
 
-  <!-- BOTONES DE ACCIÓN -->
+  <!-- ACCIONES -->
   <div class="form-actions">
     <button class="btn ghost" onclick="resetForm()">Limpiar Formulario</button>
-    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-      <button class="btn qr prof-only" onclick="generarQR()">📱 Generar QR Consentimiento</button>
-      <button class="btn primary" onclick="enviarFormulario()">✓ Enviar y Guardar</button>
+    <div style="display:flex; gap:10px;">
+      <button class="btn qr prof-only" id="btnQR" onclick="generarQR()">📱 QR Consentimiento</button>
+      <button class="btn primary" id="btnGuardar" onclick="enviarFormulario()">✓ Guardar Consulta</button>
     </div>
   </div>
-
-  <p class="progress-note">Los datos se guardarán en tu Google Drive de forma segura.</p>
 
 </div>
 
 <!-- MODAL QR -->
 <div class="qr-modal" id="qrModal">
   <div class="qr-content">
-    <h2>Código QR para Consentimiento</h2>
-    <p>Escanea este código desde tu celular para firmar el consentimiento:</p>
+    <h2>Firma desde tu Celular</h2>
+    <p>Escanea este código con el móvil del paciente para que firme de forma remota:</p>
     <div id="qrcode"></div>
-    <p style="font-size:12px; color:var(--ink-soft); margin:20px 0;">El paciente podrá firmar desde su propio celular sin necesidad de dispositivos adicionales.</p>
-    <button class="qr-close" onclick="cerrarQR()">Cerrar</button>
+    <button class="btn primary" onclick="document.getElementById('qrModal').classList.remove('active')">Cerrar</button>
   </div>
 </div>
 
 <script>
-  // ===== INICIALIZACIÓN =====
-  document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const modoPaciente = urlParams.get('modo') === 'paciente';
-    
-    if (modoPaciente) {
+  // URL DE DESPLIEGUE DE TU WEB APP DE GOOGLE APPS SCRIPT
+  // Coloca aquí la URL que te entrega Google tras hacer "Implementar > Nueva implementación" como Aplicación Web
+  const SCRIPT_URL = "REEMPLAZA_CON_TU_URL_DE_EXEC_APPS_SCRIPT";
+
+  let canvas, ctx, drawing = false;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if(params.get('modo') === 'paciente') {
       document.body.classList.add('modo-paciente');
+      if(params.get('qr') === 'consentimiento') cambiarTab('t6');
     }
     
-    // Configurar fecha actual
-    document.getElementById('consultaDate').textContent = 'Consulta del ' + new Date().toLocaleDateString('es-ES');
+    document.getElementById('consultaDate').textContent = 'Consulta: ' + new Date().toLocaleDateString();
     
-    // Event listeners para tabs
     document.querySelectorAll('nav.tabs button').forEach(btn => {
-      btn.addEventListener('click', function() {
-        cambiarTab(this.dataset.tab);
-      });
+      btn.onclick = () => cambiarTab(btn.dataset.tab);
     });
-    
-    // Validar PIN
-    document.getElementById('pinInput').addEventListener('input', function() {
-      const pin = this.value;
-      const esValido = pin.length === 4 && /^\d+$/.test(pin);
-      document.getElementById('dniSearch').disabled = !esValido;
-      document.getElementById('btnBuscar').disabled = !esValido;
-    });
-    
-    // Cálculo automático de IMC
-    document.getElementById('pesoActual').addEventListener('input', calcularIMC);
-    document.getElementById('estatura').addEventListener('input', calcularIMC);
-    
-    // Carga de archivo
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-      const fileName = e.target.files[0]?.name || '';
-      document.getElementById('fileNameDisplay').textContent = fileName ? '✓ Archivo: ' + fileName : '';
-    });
-    
-    // Canvas para firma
-    const canvas = document.getElementById('signaturePad');
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-    
-    canvas.width = canvas.offsetWidth;
+
+    document.getElementById('pinInput').oninput = function() {
+      const ok = this.value.length === 4;
+      document.getElementById('dniSearch').disabled = !ok;
+      document.getElementById('btnBuscar').disabled = !ok;
+    };
+
+    // Configuración de cálculos automáticos de IMC
+    const pesoInput = document.getElementById('peso');
+    const tallaInput = document.getElementById('talla');
+    if(pesoInput && tallaInput) {
+      pesoInput.addEventListener('input', calcularIMC);
+      tallaInput.addEventListener('input', calcularIMC);
+    }
+
+    // Inicializar Canvas de Firma con soporte Mouse + Touch Screen (Celulares)
+    canvas = document.getElementById('signaturePad');
+    ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth; 
     canvas.height = 150;
-    
-    canvas.addEventListener('mousedown', () => isDrawing = true);
-    canvas.addEventListener('mouseup', () => isDrawing = false);
-    canvas.addEventListener('mousemove', function(e) {
-      if (!isDrawing) return;
-      const rect = canvas.getBoundingClientRect();
-      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-      ctx.stroke();
+
+    // Eventos Mouse
+    canvas.addEventListener('mousedown', () => drawing = true);
+    canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+    canvas.addEventListener('mousemove', dibujarMouse);
+
+    // Eventos Pantalla Táctil (Móviles QR)
+    canvas.addEventListener('touchstart', (e) => {
+      drawing = true;
+      e.preventDefault();
     });
-    
-    // Touch support para tablets
-    canvas.addEventListener('touchstart', () => isDrawing = true);
-    canvas.addEventListener('touchend', () => isDrawing = false);
-    canvas.addEventListener('touchmove', function(e) {
-      if (!isDrawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      ctx.stroke();
+    canvas.addEventListener('touchend', () => {
+      drawing = false;
+      ctx.beginPath();
     });
+    canvas.addEventListener('touchmove', dibujarTouch, { passive: false });
   });
 
-  // ===== FUNCIONES =====
-  function cambiarTab(tabId) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    document.querySelector(`button[data-tab="${tabId}"]`).classList.add('active');
-  }
-
   function calcularIMC() {
-    const peso = parseFloat(document.getElementById('pesoActual').value);
-    const estatura = parseFloat(document.getElementById('estatura').value) / 100;
-    if (peso && estatura) {
-      const imc = (peso / (estatura * estatura)).toFixed(1);
-      document.getElementById('imc').value = imc;
+    const peso = parseFloat(document.getElementById('peso').value);
+    const talla = parseFloat(document.getElementById('talla').value) / 100; // cm a metros
+    const imcInput = document.getElementById('imc');
+    if (peso > 0 && talla > 0) {
+      const imc = (peso / (talla * talla)).toFixed(2);
+      imcInput.value = imc;
+    } else {
+      imcInput.value = '';
     }
   }
 
-  function limpiarFirma() {
-    const canvas = document.getElementById('signaturePad');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  function dibujarMouse(e) {
+    if(!drawing) return;
+    const r = canvas.getBoundingClientRect();
+    ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#23281F';
+    ctx.lineTo(e.clientX - r.left, e.clientY - r.top);
+    ctx.stroke();
   }
 
-  function guardarFirma() {
-    alert('Firma guardada correctamente');
+  function dibujarTouch(e) {
+    if(!drawing) return;
+    const r = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#23281F';
+    ctx.lineTo(touch.clientX - r.left, touch.clientY - r.top);
+    ctx.stroke();
+    e.preventDefault();
   }
 
-  function buscarPaciente() {
-    const dni = document.getElementById('dniSearch').value;
-    alert('Buscando paciente con DNI: ' + dni);
-    // Aquí iría la lógica de búsqueda en Google Sheets
+  function cambiarTab(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+    
+    const panelActivo = document.getElementById(id);
+    const botonActivo = document.querySelector(`[data-tab="${id}"]`);
+    if(panelActivo) panelActivo.classList.add('active');
+    if(botonActivo) botonActivo.classList.add('active');
   }
 
   function generarQR() {
-    const urlActual = window.location.href.split('?')[0];
-    const urlQR = urlActual + '?modo=paciente&qr=consentimiento';
-    
+    const url = window.location.href.split('?')[0] + '?modo=paciente&qr=consentimiento';
     document.getElementById('qrcode').innerHTML = '';
-    new QRCode(document.getElementById('qrcode'), {
-      text: urlQR,
-      width: 200,
-      height: 200
-    });
-    
+    new QRCode(document.getElementById('qrcode'), { text: url, width: 180, height: 180 });
     document.getElementById('qrModal').classList.add('active');
   }
 
-  function cerrarQR() {
-    document.getElementById('qrModal').classList.remove('active');
+  function limpiarFirma() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
   function resetForm() {
-    if (confirm('¿Deseas limpiar todos los datos del formulario?')) {
-      document.querySelectorAll('input, textarea, select').forEach(el => {
-        if (el.type !== 'file') el.value = '';
-      });
-      document.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = false);
-      limpiarFirma();
+    if(confirm("¿Estás seguro de que deseas limpiar todo el formulario?")) {
+      location.reload();
     }
   }
 
+  // FUNCIÓN: Buscar paciente histórico mediante API GET
+  function buscarPaciente() {
+    const dni = document.getElementById('dniSearch').value.trim();
+    if(!dni) return alert("Ingresa un DNI para buscar.");
+
+    document.getElementById('btnBuscar').textContent = "Buscando...";
+    
+    fetch(`${SCRIPT_URL}?action=buscarPaciente&dni=${dni}`)
+      .then(res => res.json())
+      .then(res => {
+        if(res.success && res.data) {
+          document.getElementById('nombrePaciente').value = res.data.nombrePaciente || '';
+          document.getElementById('dniPaciente').value = dni;
+          document.getElementById('peso').value = res.data.pesoActual || '';
+          document.getElementById('imc').value = res.data.imc || '';
+          document.getElementById('diagnosticoDNI').value = res.data.diagnosticoDNI || '';
+          document.getElementById('planTrabajo').value = res.data.planTrabajo || '';
+          alert("Paciente encontrado. Se han cargado sus datos históricos más recientes.");
+        } else {
+          alert("No se encontró ningún historial para el DNI especificado.");
+        }
+      })
+      .catch(err => alert("Error en la conexión con el servidor: " + err.toString()))
+      .finally(() => {
+        document.getElementById('btnBuscar').textContent = "Buscar";
+      });
+  }
+
+  // FUNCIÓN: Enviar datos vía POST al Apps Script
   function enviarFormulario() {
-    // Validar campos obligatorios
-    const nombre = document.getElementById('nombrePaciente').value;
-    const dni = document.getElementById('dniPaciente').value;
-    const consentimiento = document.getElementById('consentimientoCheck').checked;
+    const dniPac = document.getElementById('dniPaciente').value.trim();
+    const nomPac = document.getElementById('nombrePaciente').value.trim();
     
-    if (!nombre || !dni) {
-      alert('Por favor completa el nombre y DNI del paciente');
-      return;
+    if(!dniPac || !nomPac) {
+      return alert("El nombre del paciente y el Documento (DNI) son campos obligatorios.");
     }
-    
-    if (!consentimiento) {
-      alert('El paciente debe aceptar el consentimiento informado');
-      return;
-    }
-    
-    // Recopilar datos del formulario
+
+    // Verificar si el lienzo de firma tiene trazos
+    const firmaBlanco = isCanvasBlank(canvas);
+    const firmaDataUrl = firmaBlanco ? "" : canvas.toDataURL();
+
+    const btnGuardar = document.getElementById('btnGuardar');
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = "Guardando...";
+
     const formData = {
-      nombrePaciente: nombre,
-      dniPaciente: dni,
-      fechaNacimiento: document.getElementById('fechaNacimiento').value,
-      edadPaciente: document.getElementById('edadPaciente').value,
-      ocupacionPaciente: document.getElementById('ocupacionPaciente').value,
-      convivencia: document.getElementById('convivencia').value,
-      motivoConsulta: document.getElementById('motivoConsulta').value,
-      actividadFisica: document.getElementById('actividadFisica').value,
-      medicamentos: document.getElementById('medicamentos').value,
-      antecedentesPersonales: document.getElementById('antecedentesPersonales').value,
-      antecedentesQuirurgicos: document.getElementById('antecedentesQuirurgicos').value,
-      antecedenteFamiliares: document.getElementById('antecedenteFamiliares').value,
-      pesoActual: document.getElementById('pesoActual').value,
-      estatura: document.getElementById('estatura').value,
+      dniPaciente: dniPac,
+      nombrePaciente: nomPac,
+      pesoActual: document.getElementById('peso').value,
       imc: document.getElementById('imc').value,
-      glicemia: document.getElementById('glicemia').value,
-      colesterol: document.getElementById('colesterol').value,
-      trigliceridos: document.getElementById('trigliceridos').value,
-      hba1c: document.getElementById('hba1c').value,
-      desayuno: document.getElementById('desayuno').value,
-      mediaMañana: document.getElementById('mediaMañana').value,
-      almuerzo: document.getElementById('almuerzo').value,
-      merienda: document.getElementById('merienda').value,
-      cena: document.getElementById('cena').value,
-      otros: document.getElementById('otros').value,
-      dni: document.getElementById('dni').value,
-      requerimiento: document.getElementById('requerimiento').value,
-      macros: document.getElementById('macros').value,
+      diagnosticoDNI: document.getElementById('diagnosticoDNI').value,
       planTrabajo: document.getElementById('planTrabajo').value,
-      firma: document.getElementById('signaturePad').toDataURL(),
-      timestamp: new Date().toISOString()
+      firma: firmaDataUrl,
+      pin: document.getElementById('pinInput').value
     };
-    
-    // Enviar a Google Apps Script (reemplazar con tu URL)
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwNAs34u1MeBNyoKwRDR98rPpaJ4bCwGKAsy61XYUHYP3ruoX5tb9_0-_83HxzEvmk1/exec';
-    
-    fetch(scriptUrl, {
+
+    fetch(SCRIPT_URL, {
       method: 'POST',
+      mode: 'no-cors', // Evita bloqueos CORS de redirección en Google Script
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     })
-    .then(response => {
-      alert('✓ Formulario enviado correctamente. Se ha generado el PDF en tu Google Drive.');
-      resetForm();
+    .then(() => {
+      alert('✓ Datos de la consulta transmitidos con éxito a la Base de Datos.');
+      limpiarFirma();
     })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Error al enviar el formulario. Por favor intenta nuevamente.');
+    .catch(err => alert('Error al enviar formulario: ' + err.toString()))
+    .finally(() => {
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = "✓ Guardar Consulta";
     });
   }
-</script>
 
+  function isCanvasBlank(canvas) {
+    const blank = document.createElement('canvas');
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+    return canvas.toDataURL() === blank.toDataURL();
+  }
+</script>
 </body>
 </html>
