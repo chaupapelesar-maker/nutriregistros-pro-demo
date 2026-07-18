@@ -481,7 +481,7 @@
     }
   }
 
-  // FUNCIÓN: Buscar paciente histórico mediante API GET (Ahora mapea Fecha de Nacimiento y Edad)
+  // FUNCIÓN: Buscar paciente histórico mediante API GET (Mapeo completo de campos con índices corregidos)
   function buscarPaciente() {
     const dni = document.getElementById('dniSearch').value.trim();
     if(!dni) return alert("Ingresa un DNI para buscar.");
@@ -496,7 +496,9 @@
           document.getElementById('dniPaciente').value = dni;
           document.getElementById('fechaNac').value = res.data.fechaNac || ''; 
           document.getElementById('edadPac').value = res.data.edadPaciente || ''; 
+          document.getElementById('motivo').value = res.data.motivoConsulta || ''; 
           document.getElementById('peso').value = res.data.pesoActual || '';
+          document.getElementById('talla').value = res.data.estatura || '';
           document.getElementById('imc').value = res.data.imc || '';
           document.getElementById('diagnosticoDNI').value = res.data.diagnosticoDNI || '';
           document.getElementById('planTrabajo').value = res.data.planTrabajo || '';
