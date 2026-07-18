@@ -320,7 +320,6 @@
     </div>
   </header>
 
-  <!-- SEGURIDAD: PIN Y BÚSQUEDA -->
   <div class="security-section prof-only">
     <div class="security-grid">
       <div>
@@ -335,7 +334,6 @@
     </div>
   </div>
 
-  <!-- TRACKER DE VISITAS -->
   <div class="visit-tracker">
     <div class="visit-col active">
       <div class="visit-label">Ingreso</div>
@@ -351,7 +349,6 @@
     </div>
   </div>
 
-  <!-- TABS -->
   <nav class="tabs">
     <button class="active" data-tab="t1"><span class="num">01</span>Datos y anamnesis</button>
     <button data-tab="t2" class="prof-only"><span class="num">02</span>Antropometría</button>
@@ -360,7 +357,6 @@
     <button data-tab="t6"><span class="num">05</span>Consentimiento</button>
   </nav>
 
-  <!-- PANEL 1: DATOS Y ANAMNESIS -->
   <div class="panel active" id="t1">
     <p class="section-title">Datos generales y anamnesis</p>
     <p class="section-sub">Información básica del paciente y contexto social/médico.</p>
@@ -399,7 +395,6 @@
     </div>
   </div>
 
-  <!-- PANEL 2: ANTROPOMETRÍA -->
   <div class="panel prof-only" id="t2">
     <p class="section-title">Evaluación antropométrica</p>
     <p class="section-sub">Métricas de control evolutivo.</p>
@@ -419,7 +414,6 @@
     </table>
   </div>
 
-  <!-- PANEL 3: BIOQUÍMICOS -->
   <div class="panel prof-only" id="t3">
     <p class="section-title">Indicadores bioquímicos</p>
     <p class="section-sub">Resultados analíticos de laboratorio aportados.</p>
@@ -435,7 +429,6 @@
     </table>
   </div>
 
-  <!-- PANEL 4: DIAGNÓSTICO -->
   <div class="panel prof-only" id="t5">
     <p class="section-title">Diagnóstico e indicaciones</p>
     <p class="section-sub">Diagnóstico Nutricional Integrado (DNI) y metas métricas.</p>
@@ -447,7 +440,6 @@
     </div>
   </div>
 
-  <!-- PANEL 5: CONSENTIMIENTO -->
   <div class="panel" id="t6">
     <p class="section-title">Consentimiento y Firma</p>
     <div class="consent-box" style="margin-bottom:15px;">
@@ -472,7 +464,6 @@
     <p id="fileNameDisplay" style="font-size:12px; color:var(--ink-soft); margin-top:8px;"></p>
   </div>
 
-  <!-- ACCIONES -->
   <div class="form-actions">
     <button class="btn ghost" onclick="resetForm()">Limpiar Formulario</button>
     <div style="display:flex; gap:10px;">
@@ -483,7 +474,6 @@
 
 </div>
 
-<!-- MODAL QR -->
 <div class="qr-modal" id="qrModal">
   <div class="qr-content">
     <h2>Firma desde tu Celular</h2>
@@ -494,6 +484,7 @@
 </div>
 
 <script>
+  // URL REAL DE TU BACKEND CONFIGURADO
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNAs34u1MeBNyoKwRDR98rPpaJ4bCwGKAsy61XYUHYP3ruoX5tb9_0-_83HxzEvmk1/exec";
   let canvas, ctx, drawing = false;
   let fileBase64 = "";
@@ -612,7 +603,6 @@
     
     document.getElementById('btnBuscar').textContent = "Buscando...";
     
-    // Inyección de seguridad: Pasamos DNI y PIN en la URL para interceptación del doGet
     fetch(`${SCRIPT_URL}?action=buscarPaciente&dni=${dni}&pin=${pin}`)
       .then(res => res.json())
       .then(res => {
@@ -657,7 +647,6 @@
           document.getElementById('Plan_Trabajo').value = res.data.Plan_Trabajo || '';
           alert("Paciente encontrado e historial cargado con éxito.");
         } else {
-          // Captura el mensaje descriptivo del servidor (ej: PIN incorrecto)
           alert(res.message || "Error al procesar la solicitud.");
         }
       })
@@ -668,8 +657,11 @@
   function enviarFormulario() {
     const dniPac = document.getElementById('DNI_Paciente').value.trim();
     const nomPac = document.getElementById('Nombre_Paciente').value.trim();
+    const pin = document.getElementById('pinInput').value.trim();
+
     if(!dniPac || !nomPac) return alert("El nombre y DNI son campos obligatorios.");
     if(!document.getElementById('checkConsent').checked) return alert("Debe marcar la casilla de aceptación de consentimiento.");
+    if(pin.length !== 4) return alert("Por favor, introduce tu PIN de acceso para validar la firma e instruir el guardado.");
 
     const btnGuardar = document.getElementById('btnGuardar');
     btnGuardar.disabled = true; btnGuardar.textContent = "Guardando...";
@@ -715,7 +707,7 @@
       Diagnostico_DNI: document.getElementById('Diagnostico_DNI').value,
       Firma_Base64: isCanvasBlank(canvas) ? "" : canvas.toDataURL(),
       Adjunto_Base64: fileBase64,
-      pin: document.getElementById('pinInput').value
+      pin: pin // Enviamos el PIN en el cuerpo para validar el doPost
     };
 
     fetch(SCRIPT_URL, {
@@ -724,7 +716,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     })
-    .then(() => { alert('✓ Consulta guardada y transmitida con éxito.'); limpiarFirma(); })
+    .then(() => { alert('✓ Consulta guardada con éxito.'); limpiarFirma(); })
     .catch(err => alert('Error en envío: ' + err.toString()))
     .finally(() => { btnGuardar.disabled = false; btnGuardar.textContent = "✓ Guardar Consulta"; });
   }
