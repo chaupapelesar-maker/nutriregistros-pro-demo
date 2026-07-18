@@ -36,7 +36,6 @@
   body.modo-paciente .prof-only,
   body.modo-paciente .tabs button[data-tab="t2"],
   body.modo-paciente .tabs button[data-tab="t3"],
-  body.modo-paciente .tabs button[data-tab="t4"],
   body.modo-paciente .tabs button[data-tab="t5"] { display: none !important; }
 
   /* HEADER */
@@ -88,6 +87,7 @@
     font-size:14px;
   }
   .security-grid button{
+    padding:10px 166px;
     padding:10px 16px;
     background:var(--green);
     color:#fff;
@@ -97,9 +97,28 @@
     font-weight:600;
     font-size:13px;
   }
-  .security-grid button:hover{
-    background:var(--green-deep);
+  .security-grid button:hover{ background:var(--green-deep); }
+
+  /* VISIT TRACKER */
+  .visit-tracker{
+    display:flex;
+    gap:0;
+    margin:28px 0 36px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:var(--radius);
+    overflow:hidden;
   }
+  .visit-col{
+    flex:1;
+    padding:14px 18px;
+    border-right:1px solid var(--line);
+    position:relative;
+  }
+  .visit-col:last-child{border-right:none;}
+  .visit-col.active{background:var(--green);color:#fff;}
+  .visit-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin-bottom:4px;}
+  .visit-date{font-family:'Fraunces',serif;font-size:17px;}
 
   /* TABS */
   nav.tabs{
@@ -151,6 +170,7 @@
   .full{grid-column:1/-1;}
 
   label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px;letter-spacing:.01em;}
+  label .opt{font-weight:400;color:var(--ink-soft);text-transform:none;}
   input[type=text], input[type=date], input[type=number], input[type=file], input[type=password], select, textarea{
     width:100%;
     padding:10px 12px;
@@ -162,6 +182,19 @@
     color:var(--ink);
   }
   textarea{resize:vertical;min-height:70px;}
+
+  /* TABLAS EXTENDIDAS */
+  .antro-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px;}
+  .antro-table th, .antro-table td{border:1px solid var(--line);padding:9px 10px;text-align:left;}
+  .antro-table th{background:var(--ochre-soft);color:var(--green-deep);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  .antro-table td input{border:none;padding:2px;width:100%;background:transparent;}
+  .antro-table tr:nth-child(even){background:#FBF8F2;}
+  .antro-table td.current{background:#F2ECDD;}
+
+  .radio-row{display:flex;gap:18px;margin-top:6px;}
+  .radio-row label{display:flex;align-items:center;gap:6px;font-weight:400;margin:0;}
+  .radio-row input{width:auto;}
+  .divider{height:1px;background:var(--line);margin:26px 0;}
 
   /* FIRMA DIGITAL */
   .signature-box{
@@ -195,6 +228,18 @@
     font-weight:600;
   }
 
+  /* CARGA DE ARCHIVOS */
+  .file-upload{
+    border:2px dashed var(--green);
+    border-radius:var(--radius);
+    padding:20px;
+    text-align:center;
+    cursor:pointer;
+    transition:all .3s;
+  }
+  .file-upload:hover{ background:var(--ochre-soft); border-color:var(--ochre); }
+  .file-upload input[type=file]{ display:none; }
+
   /* QR MODAL */
   .qr-modal{
     display:none;
@@ -217,6 +262,19 @@
     max-width:500px;
   }
   #qrcode{ margin:20px auto; display:flex; justify-content:center; }
+
+  .consent-box{
+    background:#FBF8F2;
+    border:1px solid var(--line);
+    border-left:4px solid var(--ochre);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.6;
+  }
+  .consent-box label{display:flex;align-items:flex-start;gap:10px;font-weight:500;color:var(--ink);margin-top:12px;}
+  .consent-box input{width:auto;margin-top:2px;}
 
   /* BOTONES */
   .form-actions{
@@ -243,6 +301,8 @@
     .grid, .grid.g3{grid-template-columns:1fr;}
     .security-grid{grid-template-columns:1fr;}
     .form-actions{flex-direction:column; gap:10px;}
+    .visit-tracker{flex-direction:column;}
+    .visit-col{border-right:none;border-bottom:1px solid var(--line);}
   }
 </style>
 </head>
@@ -261,7 +321,7 @@
     </div>
   </header>
 
-  <!-- SEGURIDAD: PIN Y BÚSQUEDA (Solo Profesional) -->
+  <!-- SEGURIDAD: PIN Y BÚSQUEDA -->
   <div class="security-section prof-only">
     <div class="security-grid">
       <div>
@@ -276,51 +336,126 @@
     </div>
   </div>
 
+  <!-- TRACKER DE VISITAS -->
+  <div class="visit-tracker">
+    <div class="visit-col active">
+      <div class="visit-label">Ingreso</div>
+      <div class="visit-date" id="visitDate1">— pendiente —</div>
+    </div>
+    <div class="visit-col">
+      <div class="visit-label">1er Control</div>
+      <div class="visit-date" id="visitDate2">— pendiente —</div>
+    </div>
+    <div class="visit-col">
+      <div class="visit-label">2do Control</div>
+      <div class="visit-date" id="visitDate3">— pendiente —</div>
+    </div>
+  </div>
+
   <!-- TABS -->
   <nav class="tabs">
     <button class="active" data-tab="t1"><span class="num">01</span>Datos y anamnesis</button>
     <button data-tab="t2" class="prof-only"><span class="num">02</span>Antropometría</button>
-    <button data-tab="t5" class="prof-only"><span class="num">03</span>Diagnóstico</button>
-    <button data-tab="t6"><span class="num">04</span>Consentimiento</button>
+    <button data-tab="t3" class="prof-only"><span class="num">03</span>Bioquímicos</button>
+    <button data-tab="t5" class="prof-only"><span class="num">04</span>Diagnóstico</button>
+    <button data-tab="t6"><span class="num">05</span>Consentimiento</button>
   </nav>
 
-  <!-- PANEL 1: DATOS -->
+  <!-- PANEL 1: DATOS Y ANAMNESIS -->
   <div class="panel active" id="t1">
-    <p class="section-title">Datos generales</p>
+    <p class="section-title">Datos generales y anamnesis</p>
+    <p class="section-sub">Información básica del paciente y contexto social/médico.</p>
     <div class="grid">
-      <div class="field"><label>Nombre completo</label><input type="text" id="nombrePaciente"></div>
-      <div class="field"><label>RUT / Documento (DNI)</label><input type="text" id="dniPaciente"></div>
-      <div class="field"><label>Fecha de nacimiento</label><input type="date" id="fechaNac"></div>
-      <div class="field"><label>Edad</label><input type="number" id="edadPac"></div>
-      <div class="field full"><label>Motivo de consulta</label><textarea id="motivo"></textarea></div>
+      <div class="field"><label>Nombre completo</label><input type="text" id="Nombre_Paciente"></div>
+      <div class="field"><label>RUT / Documento (DNI)</label><input type="text" id="DNI_Paciente"></div>
+      <div class="field"><label>Fecha de nacimiento</label><input type="date" id="Fecha_Nacimiento"></div>
+      <div class="field"><label>Edad</label><input type="number" id="Edad_Paciente"></div>
+      <div class="field"><label>Ocupación</label><input type="text" id="Ocupacion_Paciente"></div>
+      <div class="field"><label>¿Con quién vive?</label><input type="text" id="Convivencia"></div>
+      <div class="field full"><label>Motivo de consulta</label><textarea id="Motivo_Consulta"></textarea></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="grid g3">
+      <div class="field">
+        <label>Actividad física</label>
+        <select id="Actividad_Fisica"><option>Sedentario</option><option>Ligera (1-2x/sem)</option><option>Moderada (3-4x/sem)</option><option>Intensa (5+/sem)</option></select>
+      </div>
+      <div class="field"><label>Experiencia nutricionista previa</label>
+        <div class="radio-row">
+          <label><input type="radio" name="Experiencia_Previa" value="Sí"> Sí</label>
+          <label><input type="radio" name="Experiencia_Previa" value="No"> No</label>
+        </div>
+      </div>
+      <div class="field"><label>Medicamentos actuales <span class="opt">(opcional)</span></label><input type="text" id="Medicamentos"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="grid">
+      <div class="field"><label>Antecedentes mórbidos personales</label><textarea id="Antecedentes_Personales" placeholder="Diabetes, hipertensión..."></textarea></div>
+      <div class="field"><label>Antecedentes quirúrgicos</label><textarea id="Antecedentes_Quirurgicos" placeholder="Cirugías relevantes..."></textarea></div>
+      <div class="field full"><label>Antecedentes familiares</label><textarea id="Antecedentes_Familiares" placeholder="Enfermedades hereditarias..."></textarea></div>
     </div>
   </div>
 
-  <!-- PANEL 2: ANTROPOMETRÍA -->
+  <!-- PANEL 2: ANTROPOMETRÍA EXTENDIDA -->
   <div class="panel prof-only" id="t2">
-    <p class="section-title">Antropometría</p>
-    <div class="grid">
-      <div class="field"><label>Peso Actual (kg)</label><input type="number" id="peso" step="0.1"></div>
-      <div class="field"><label>Estatura (cm)</label><input type="number" id="talla" step="1"></div>
-      <div class="field"><label>IMC (Calculado)</label><input type="text" id="imc" readonly style="background:#f4f4f4; font-weight:bold;"></div>
-    </div>
+    <p class="section-title">Evaluación antropométrica</p>
+    <p class="section-sub">Métricas de control evolutivo.</p>
+    <table class="antro-table">
+      <thead>
+        <tr><th>Medición</th><th class="current">Ingreso</th><th>1er control</th><th>2do control</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Peso habitual (kg)</td><td class="current"><input type="text" id="Peso_Habitual"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
+        <tr><td>Peso actual (kg)</td><td class="current"><input type="number" id="Peso_Actual" step="0.1"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
+        <tr><td>Estatura (cm)</td><td class="current"><input type="number" id="Estatura" step="1"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
+        <tr><td>IMC (Calculado)</td><td class="current"><input type="text" id="IMC" readonly style="font-weight:bold;"></td><td><input type="text" readonly placeholder="—"></td><td><input type="text" readonly placeholder="—"></td></tr>
+        <tr><td>Circ. cintura (cm)</td><td class="current"><input type="text" id="Circ_Cintura"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
+        <tr><td>Circ. pantorrilla (cm)</td><td class="current"><input type="text" id="Circ_Pantorrilla"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
+        <tr><td>Circ. braquial (cm)</td><td class="current"><input type="text" id="Circ_Braquial"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <!-- PANEL 5: DIAGNÓSTICO -->
+  <!-- PANEL 3: INDICADORES BIOQUÍMICOS -->
+  <div class="panel prof-only" id="t3">
+    <p class="section-title">Indicadores bioquímicos</p>
+    <p class="section-sub">Resultados analíticos de laboratorio aportados.</p>
+    <table class="antro-table">
+      <thead><tr><th>Examen</th><th>Valor</th><th>Rango normal</th><th>Interpretación</th></tr></thead>
+      <tbody>
+        <tr><td>Glicemia</td><td><input type="text" id="Glicemia"></td><td>70–100 mg/dl</td><td><input type="text" id="Glicemia_Interp"></td></tr>
+        <tr><td>Colesterol total</td><td><input type="text" id="Colesterol"></td><td>&lt;200 mg/dl</td><td><input type="text" id="Colesterol_Interp"></td></tr>
+        <tr><td>Triglicéridos</td><td><input type="text" id="Trigliceridos"></td><td>&lt;150 mg/dl</td><td><input type="text" id="Trigliceridos_Interp"></td></tr>
+        <tr><td>HbA1c</td><td><input type="text" id="HbA1c"></td><td>&lt;7%</td><td><input type="text" id="HbA1c_Interp"></td></tr>
+        <tr><td>Otro examen</td><td><input type="text" id="Otro_Examen"></td><td>—</td><td><input type="text" id="Otro_Examen_Interp"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PANEL 4: DIAGNÓSTICO -->
   <div class="panel prof-only" id="t5">
-    <p class="section-title">Diagnóstico Nutricional Integrado</p>
+    <p class="section-title">Diagnóstico e indicaciones</p>
+    <p class="section-sub">Diagnóstico Nutricional Integrado (DNI) y metas métricas.</p>
     <div class="grid">
-      <div class="field full"><label>Diagnóstico (DNI)</label><textarea id="diagnosticoDNI" placeholder="Describa el diagnóstico nutricional..."></textarea></div>
-      <div class="field full"><label>Plan de Trabajo</label><textarea id="planTrabajo"></textarea></div>
+      <div class="field full"><label>Diagnóstico (DNI)</label><textarea id="Diagnostico_DNI" placeholder="Describa el diagnóstico..."></textarea></div>
+      <div class="field"><label>Requerimiento energético (kcal)</label><input type="number" id="Requerimiento"></div>
+      <div class="field"><label>Distribución de macronutrientes</label><input type="text" id="Macros" placeholder="Ej: 50% HC / 20% PROT / 30% LIP"></div>
+      <div class="field full"><label>Plan de Trabajo</label><textarea id="Plan_Trabajo"></textarea></div>
     </div>
   </div>
 
-  <!-- PANEL 6: CONSENTIMIENTO -->
+  <!-- PANEL 5: CONSENTIMIENTO -->
   <div class="panel" id="t6">
     <p class="section-title">Consentimiento y Firma</p>
     <div class="consent-box" style="margin-bottom:15px;">
-      <p>Acepto el treatment nutricional y autorizo el uso de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
+      <p><strong>Declaración de Consentimiento Informado</strong></p>
+      <p>Acepto el tratamiento nutricional y autorizo el uso de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
       <label><input type="checkbox" id="checkConsent"> Acepto términos y condiciones</label>
+      <label><input type="checkbox" id="privacidadCheck"> Autorizo el tratamiento de mis datos personales</label>
     </div>
     <div class="signature-box">
       <label>Firme dentro del recuadro:</label>
@@ -329,6 +464,13 @@
         <button type="button" onclick="limpiarFirma()">Limpiar Firma</button>
       </div>
     </div>
+
+    <label style="margin-top:20px;">Adjuntar Documentación Adicional (Estudios, DNI, etc.)</label>
+    <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+      <p>📎 Haz clic para cargar imagen o arrastra aquí</p>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+    <p id="fileNameDisplay" style="font-size:12px; color:var(--ink-soft); margin-top:8px;"></p>
   </div>
 
   <!-- ACCIONES -->
@@ -353,25 +495,22 @@
 </div>
 
 <script>
-  // URL DE DESPLIEGUE DE TU WEB APP DE GOOGLE APPS SCRIPT
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNAs34u1MeBNyoKwRDR98rPpaJ4bCwGKAsy61XYUHYP3ruoX5tb9_0-_83HxzEvmk1/exec";
-
   let canvas, ctx, drawing = false;
+  let fileBase64 = "";
 
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     
-    // LOGICA QR DINAMICO: Si se abre en modo paciente, recupera DNI y Nombre desde la URL automáticamente
     if(params.get('modo') === 'paciente') {
       document.body.classList.add('modo-paciente');
-      
-      if(params.get('dni')) document.getElementById('dniPaciente').value = params.get('dni');
-      if(params.get('nombre')) document.getElementById('nombrePaciente').value = decodeURIComponent(params.get('nombre'));
-      
+      if(params.get('dni')) document.getElementById('DNI_Paciente').value = params.get('dni');
+      if(params.get('nombre')) document.getElementById('Nombre_Paciente').value = decodeURIComponent(params.get('nombre'));
       if(params.get('qr') === 'consentimiento') cambiarTab('t6');
     }
     
     document.getElementById('consultaDate').textContent = 'Consulta: ' + new Date().toLocaleDateString();
+    document.getElementById('visitDate1').textContent = new Date().toLocaleDateString();
     
     document.querySelectorAll('nav.tabs button').forEach(btn => {
       btn.onclick = () => cambiarTab(btn.dataset.tab);
@@ -383,44 +522,42 @@
       document.getElementById('btnBuscar').disabled = !ok;
     };
 
-    // Configuración de cálculos automáticos de IMC
-    const pesoInput = document.getElementById('peso');
-    const tallaInput = document.getElementById('talla');
+    const pesoInput = document.getElementById('Peso_Actual');
+    const tallaInput = document.getElementById('Estatura');
     if(pesoInput && tallaInput) {
       pesoInput.addEventListener('input', calcularIMC);
       tallaInput.addEventListener('input', calcularIMC);
     }
 
-    // Inicializar Canvas de Firma con soporte Mouse + Touch Screen (Celulares)
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if(file) {
+        document.getElementById('fileNameDisplay').textContent = "✓ Cargado: " + file.name;
+        const reader = new FileReader();
+        reader.onload = function(evt) { fileBase64 = evt.target.result; };
+        reader.readAsDataURL(file);
+      }
+    });
+
     canvas = document.getElementById('signaturePad');
     ctx = canvas.getContext('2d');
     canvas.width = canvas.offsetWidth; 
     canvas.height = 150;
 
-    // Eventos Mouse
     canvas.addEventListener('mousedown', () => drawing = true);
     canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
     canvas.addEventListener('mousemove', dibujarMouse);
-
-    // Eventos Pantalla Táctil (Móviles QR)
-    canvas.addEventListener('touchstart', (e) => {
-      drawing = true;
-      e.preventDefault();
-    });
-    canvas.addEventListener('touchend', () => {
-      drawing = false;
-      ctx.beginPath();
-    });
+    canvas.addEventListener('touchstart', (e) => { drawing = true; e.preventDefault(); });
+    canvas.addEventListener('touchend', () => { drawing = false; ctx.beginPath(); });
     canvas.addEventListener('touchmove', dibujarTouch, { passive: false });
   });
 
   function calcularIMC() {
-    const peso = parseFloat(document.getElementById('peso').value);
-    const talla = parseFloat(document.getElementById('talla').value) / 100; // cm a metros
-    const imcInput = document.getElementById('imc');
+    const peso = parseFloat(document.getElementById('Peso_Actual').value);
+    const talla = parseFloat(document.getElementById('Estatura').value) / 100;
+    const imcInput = document.getElementById('IMC');
     if (peso > 0 && talla > 0) {
-      const imc = (peso / (talla * talla)).toFixed(2);
-      imcInput.value = imc;
+      imcInput.value = (peso / (talla * talla)).toFixed(2);
     } else {
       imcInput.value = '';
     }
@@ -447,124 +584,149 @@
   function cambiarTab(id) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
-    
     const panelActivo = document.getElementById(id);
     const botonActivo = document.querySelector(`[data-tab="${id}"]`);
     if(panelActivo) panelActivo.classList.add('active');
     if(botonActivo) botonActivo.classList.add('active');
   }
 
-  // LOGICA QR DINAMICO: Empaqueta de manera segura las credenciales de la sesión activa
   function generarQR() {
-    const dniPac = document.getElementById('dniPaciente').value.trim();
-    const nomPac = document.getElementById('nombrePaciente').value.trim();
-
-    if(!dniPac || !nomPac) {
-      return alert("Para generar el QR de firma, primero debes escribir el Nombre y el DNI del paciente en la pestaña 01.");
-    }
-
+    const dniPac = document.getElementById('DNI_Paciente').value.trim();
+    const nomPac = document.getElementById('Nombre_Paciente').value.trim();
+    if(!dniPac || !nomPac) return alert("Escribe el Nombre y DNI del paciente en la pestaña 01.");
     const urlBase = window.location.href.split('?')[0];
     const urlDinamica = `${urlBase}?modo=paciente&qr=consentimiento&dni=${dniPac}&nombre=${encodeURIComponent(nomPac)}`;
-    
     document.getElementById('qrcode').innerHTML = '';
     new QRCode(document.getElementById('qrcode'), { text: urlDinamica, width: 180, height: 180 });
     document.getElementById('qrModal').classList.add('active');
   }
 
-  function limpiarFirma() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
+  function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  function resetForm() { if(confirm("¿Limpiar todo el formulario?")) location.reload(); }
 
-  function resetForm() {
-    if(confirm("¿Estás seguro de que deseas limpiar todo el formulario?")) {
-      location.reload();
-    }
-  }
-
-  // FUNCIÓN: Buscar paciente histórico mediante API GET (Mapeo completo de campos con índices corregidos)
   function buscarPaciente() {
     const dni = document.getElementById('dniSearch').value.trim();
-    if(!dni) return alert("Ingresa un DNI para buscar.");
-
+    if(!dni) return alert("Ingresa un DNI.");
     document.getElementById('btnBuscar').textContent = "Buscando...";
     
     fetch(`${SCRIPT_URL}?action=buscarPaciente&dni=${dni}`)
       .then(res => res.json())
       .then(res => {
         if(res.success && res.data) {
-          document.getElementById('nombrePaciente').value = res.data.nombrePaciente || '';
-          document.getElementById('dniPaciente').value = dni;
-          document.getElementById('fechaNac').value = res.data.fechaNac || ''; 
-          document.getElementById('edadPac').value = res.data.edadPaciente || ''; 
-          document.getElementById('motivo').value = res.data.motivoConsulta || ''; 
-          document.getElementById('peso').value = res.data.pesoActual || '';
-          document.getElementById('talla').value = res.data.estatura || '';
-          document.getElementById('imc').value = res.data.imc || '';
-          document.getElementById('diagnosticoDNI').value = res.data.diagnosticoDNI || '';
-          document.getElementById('planTrabajo').value = res.data.planTrabajo || '';
-          alert("Paciente encontrado. Se han cargado sus datos históricos más recientes.");
+          document.getElementById('Nombre_Paciente').value = res.data.Nombre_Paciente || '';
+          document.getElementById('DNI_Paciente').value = dni;
+          document.getElementById('Fecha_Nacimiento').value = res.data.Fecha_Nacimiento || ''; 
+          document.getElementById('Edad_Paciente').value = res.data.Edad_Paciente || ''; 
+          document.getElementById('Ocupacion_Paciente').value = res.data.Ocupacion_Paciente || '';
+          document.getElementById('Convivencia').value = res.data.Convivencia || '';
+          document.getElementById('Motivo_Consulta').value = res.data.Motivo_Consulta || ''; 
+          document.getElementById('Actividad_Fisica').value = res.data.Actividad_Fisica || 'Sedentario';
+          if(res.data.Experiencia_Previa) {
+            document.querySelectorAll(`input[name="Experiencia_Previa"]`).forEach(r => {
+              if(r.value === res.data.Experiencia_Previa) r.checked = true;
+            });
+          }
+          document.getElementById('Medicamentos').value = res.data.Medicamentos || '';
+          document.getElementById('Antecedentes_Personales').value = res.data.Antecedentes_Personales || '';
+          document.getElementById('Antecedentes_Quirurgicos').value = res.data.Antecedentes_Quirurgicos || '';
+          document.getElementById('Antecedentes_Familiares').value = res.data.Antecedentes_Familiares || '';
+          document.getElementById('Peso_Habitual').value = res.data.Peso_Habitual || '';
+          document.getElementById('Peso_Actual').value = res.data.Peso_Actual || '';
+          document.getElementById('Estatura').value = res.data.Estatura || '';
+          document.getElementById('IMC').value = res.data.IMC || '';
+          document.getElementById('Circ_Cintura').value = res.data.Circ_Cintura || '';
+          document.getElementById('Circ_Pantorrilla').value = res.data.Circ_Pantorrilla || '';
+          document.getElementById('Circ_Braquial').value = res.data.Circ_Braquial || '';
+          document.getElementById('Glicemia').value = res.data.Glicemia || '';
+          document.getElementById('Glicemia_Interp').value = res.data.Glicemia_Interp || '';
+          document.getElementById('Colesterol').value = res.data.Colesterol || '';
+          document.getElementById('Colesterol_Interp').value = res.data.Colesterol_Interp || '';
+          document.getElementById('Trigliceridos').value = res.data.Trigliceridos || '';
+          document.getElementById('Trigliceridos_Interp').value = res.data.Trigliceridos_Interp || '';
+          document.getElementById('HbA1c').value = res.data.HbA1c || '';
+          document.getElementById('HbA1c_Interp').value = res.data.HbA1c_Interp || '';
+          document.getElementById('Otro_Examen').value = res.data.Otro_Examen || '';
+          document.getElementById('Otro_Examen_Interp').value = res.data.Otro_Examen_Interp || '';
+          document.getElementById('Diagnostico_DNI').value = res.data.Diagnostico_DNI || '';
+          document.getElementById('Requerimiento').value = res.data.Requerimiento || '';
+          document.getElementById('Macros').value = res.data.Macros || '';
+          document.getElementById('Plan_Trabajo').value = res.data.Plan_Trabajo || '';
+          alert("Paciente encontrado e historial cargado.");
         } else {
-          alert("No se encontró ningún historial para el DNI especificado.");
+          alert("No se encontró ningún historial.");
         }
       })
-      .catch(err => alert("Error en la conexión con el servidor: " + err.toString()))
-      .finally(() => {
-        document.getElementById('btnBuscar').textContent = "Buscar";
-      });
+      .catch(err => alert("Error de servidor: " + err.toString()))
+      .finally(() => { document.getElementById('btnBuscar').textContent = "Buscar"; });
   }
 
-  // FUNCIÓN: Enviar datos vía POST al Apps Script
   function enviarFormulario() {
-    const dniPac = document.getElementById('dniPaciente').value.trim();
-    const nomPac = document.getElementById('nombrePaciente').value.trim();
-    
-    if(!dniPac || !nomPac) {
-      return alert("El nombre del paciente y el Documento (DNI) son campos obligatorios.");
-    }
-
-    const firmaBlanco = isCanvasBlank(canvas);
-    const firmaDataUrl = firmaBlanco ? "" : canvas.toDataURL();
+    const dniPac = document.getElementById('DNI_Paciente').value.trim();
+    const nomPac = document.getElementById('Nombre_Paciente').value.trim();
+    if(!dniPac || !nomPac) return alert("El nombre y DNI son obligatorios.");
+    if(!document.getElementById('checkConsent').checked) return alert("Debe marcar el casillero de consentimiento.");
 
     const btnGuardar = document.getElementById('btnGuardar');
-    btnGuardar.disabled = true;
-    btnGuardar.textContent = "Guardando...";
+    btnGuardar.disabled = true; btnGuardar.textContent = "Guardando...";
+
+    const expPreviaChecked = document.querySelector('input[name="Experiencia_Previa"]:checked');
 
     const formData = {
-      dniPaciente: dniPac,
-      nombrePaciente: nomPac,
-      fechaNacimiento: document.getElementById('fechaNac').value,
-      edadPaciente: document.getElementById('edadPac').value,
-      motivoConsulta: document.getElementById('motivo').value,
-      pesoActual: document.getElementById('peso').value,
-      estatura: document.getElementById('talla').value,
-      imc: document.getElementById('imc').value,
-      diagnosticoDNI: document.getElementById('diagnosticoDNI').value,
-      planTrabajo: document.getElementById('planTrabajo').value,
-      firma: firmaDataUrl,
+      Fecha_Consulta: new Date().toLocaleDateString(),
+      DNI_Paciente: dniPac,
+      Nombre_Paciente: nomPac,
+      Fecha_Nacimiento: document.getElementById('Fecha_Nacimiento').value,
+      Edad_Paciente: document.getElementById('Edad_Paciente').value,
+      Ocupacion_Paciente: document.getElementById('Ocupacion_Paciente').value,
+      Motivo_Consulta: document.getElementById('Motivo_Consulta').value,
+      Peso_Actual: document.getElementById('Peso_Actual').value,
+      Estatura: document.getElementById('Estatura').value,
+      IMC: document.getElementById('IMC').value,
+      Glicemia: document.getElementById('Glicemia').value,
+      Colesterol: document.getElementById('Colesterol').value,
+      Trigliceridos: document.getElementById('Trigliceridos').value,
+      Requerimiento: document.getElementById('Requerimiento').value,
+      Macros: document.getElementById('Macros').value,
+      Plan_Trabajo: document.getElementById('Plan_Trabajo').value,
+      Timestamp: new Date().toISOString(),
+      Convivencia: document.getElementById('Convivencia').value,
+      Actividad_Fisica: document.getElementById('Actividad_Fisica').value,
+      Experiencia_Previa: expPreviaChecked ? expPreviaChecked.value : "",
+      Medicamentos: document.getElementById('Medicamentos').value,
+      Antecedentes_Personales: document.getElementById('Antecedentes_Personales').value,
+      Antecedentes_Quirurgicos: document.getElementById('Antecedentes_Quirurgicos').value,
+      Antecedentes_Familiares: document.getElementById('Antecedentes_Familiares').value,
+      Peso_Habitual: document.getElementById('Peso_Habitual').value,
+      Circ_Cintura: document.getElementById('Circ_Cintura').value,
+      Circ_Pantorrilla: document.getElementById('Circ_Pantorrilla').value,
+      Circ_Braquial: document.getElementById('Circ_Braquial').value,
+      Glicemia_Interp: document.getElementById('Glicemia_Interp').value,
+      Colesterol_Interp: document.getElementById('Colesterol_Interp').value,
+      Trigliceridos_Interp: document.getElementById('Trigliceridos_Interp').value,
+      HbA1c: document.getElementById('HbA1c').value,
+      HbA1c_Interp: document.getElementById('HbA1c_Interp').value,
+      Otro_Examen: document.getElementById('Otro_Examen').value,
+      Otro_Examen_Interp: document.getElementById('Otro_Examen_Interp').value,
+      Diagnostico_DNI: document.getElementById('Diagnostico_DNI').value,
+      Firma_Base64: isCanvasBlank(canvas) ? "" : canvas.toDataURL(),
+      Adjunto_Base64: fileBase64,
       pin: document.getElementById('pinInput').value
     };
 
     fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors', 
+      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     })
-    .then(() => {
-      alert('✓ Datos de la consulta transmitidos con éxito a la Base de Datos.');
-      limpiarFirma();
-    })
-    .catch(err => alert('Error al enviar formulario: ' + err.toString()))
-    .finally(() => {
-      btnGuardar.disabled = false;
-      btnGuardar.textContent = "✓ Guardar Consulta";
-    });
+    .then(() => { alert('✓ Consulta guardada y transmitida con éxito.'); limpiarFirma(); })
+    .catch(err => alert('Error: ' + err.toString()))
+    .finally(() => { btnGuardar.disabled = false; btnGuardar.textContent = "✓ Guardar Consulta"; });
   }
 
   function isCanvasBlank(canvas) {
     const blank = document.createElement('canvas');
-    blank.width = canvas.width;
-    blank.height = canvas.height;
+    blank.width = canvas.width; blank.height = canvas.height;
     return canvas.toDataURL() === blank.toDataURL();
   }
 </script>
