@@ -319,7 +319,7 @@
   <div class="panel" id="t6">
     <p class="section-title">Consentimiento y Firma</p>
     <div class="consent-box" style="margin-bottom:15px;">
-      <p>Acepto el tratamiento nutricional y autorizo el uso de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
+      <p>Acepto el treatment nutricional y autorizo el uso de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
       <label><input type="checkbox" id="checkConsent"> Acepto términos y condiciones</label>
     </div>
     <div class="signature-box">
@@ -354,15 +354,20 @@
 
 <script>
   // URL DE DESPLIEGUE DE TU WEB APP DE GOOGLE APPS SCRIPT
-  // Coloca aquí la URL que te entrega Google tras hacer "Implementar > Nueva implementación" como Aplicación Web
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNAs34u1MeBNyoKwRDR98rPpaJ4bCwGKAsy61XYUHYP3ruoX5tb9_0-_83HxzEvmk1/exec";
 
   let canvas, ctx, drawing = false;
 
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
+    
+    // LOGICA QR DINAMICO: Si se abre en modo paciente, recupera DNI y Nombre desde la URL automáticamente
     if(params.get('modo') === 'paciente') {
       document.body.classList.add('modo-paciente');
+      
+      if(params.get('dni')) document.getElementById('dniPaciente').value = params.get('dni');
+      if(params.get('nombre')) document.getElementById('nombrePaciente').value = decodeURIComponent(params.get('nombre'));
+      
       if(params.get('qr') === 'consentimiento') cambiarTab('t6');
     }
     
@@ -449,10 +454,20 @@
     if(botonActivo) botonActivo.classList.add('active');
   }
 
+  // LOGICA QR DINAMICO: Empaqueta de manera segura las credenciales de la sesión activa
   function generarQR() {
-    const url = window.location.href.split('?')[0] + '?modo=paciente&qr=consentimiento';
+    const dniPac = document.getElementById('dniPaciente').value.trim();
+    const nomPac = document.getElementById('nombrePaciente').value.trim();
+
+    if(!dniPac || !nomPac) {
+      return alert("Para generar el QR de firma, primero debes escribir el Nombre y el DNI del paciente en la pestaña 01.");
+    }
+
+    const urlBase = window.location.href.split('?')[0];
+    const urlDinamica = `${urlBase}?modo=paciente&qr=consentimiento&dni=${dniPac}&nombre=${encodeURIComponent(nomPac)}`;
+    
     document.getElementById('qrcode').innerHTML = '';
-    new QRCode(document.getElementById('qrcode'), { text: url, width: 180, height: 180 });
+    new QRCode(document.getElementById('qrcode'), { text: urlDinamica, width: 180, height: 180 });
     document.getElementById('qrModal').classList.add('active');
   }
 
@@ -466,7 +481,7 @@
     }
   }
 
-  // FUNCIÓN: Buscar paciente histórico mediante API GET
+  // FUNCIÓN: Buscar paciente histórico mediante API GET (Ahora mapea Fecha de Nacimiento y Edad)
   function buscarPaciente() {
     const dni = document.getElementById('dniSearch').value.trim();
     if(!dni) return alert("Ingresa un DNI para buscar.");
@@ -479,6 +494,8 @@
         if(res.success && res.data) {
           document.getElementById('nombrePaciente').value = res.data.nombrePaciente || '';
           document.getElementById('dniPaciente').value = dni;
+          document.getElementById('fechaNac').value = res.data.fechaNac || ''; 
+          document.getElementById('edadPac').value = res.data.edadPaciente || ''; 
           document.getElementById('peso').value = res.data.pesoActual || '';
           document.getElementById('imc').value = res.data.imc || '';
           document.getElementById('diagnosticoDNI').value = res.data.diagnosticoDNI || '';
@@ -503,7 +520,6 @@
       return alert("El nombre del paciente y el Documento (DNI) son campos obligatorios.");
     }
 
-    // Verificar si el lienzo de firma tiene trazos
     const firmaBlanco = isCanvasBlank(canvas);
     const firmaDataUrl = firmaBlanco ? "" : canvas.toDataURL();
 
@@ -514,7 +530,11 @@
     const formData = {
       dniPaciente: dniPac,
       nombrePaciente: nomPac,
+      fechaNacimiento: document.getElementById('fechaNac').value,
+      edadPaciente: document.getElementById('edadPac').value,
+      motivoConsulta: document.getElementById('motivo').value,
       pesoActual: document.getElementById('peso').value,
+      estatura: document.getElementById('talla').value,
       imc: document.getElementById('imc').value,
       diagnosticoDNI: document.getElementById('diagnosticoDNI').value,
       planTrabajo: document.getElementById('planTrabajo').value,
@@ -524,7 +544,7 @@
 
     fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors', // Evita bloqueos CORS de redirección en Google Script
+      mode: 'no-cors', 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     })
