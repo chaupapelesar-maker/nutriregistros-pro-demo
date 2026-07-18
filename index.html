@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NutriRegistros Pro - Sistema de Gestión Nutricional</title>
+<title>NutriRegistros Pro - Sistema de Gestión Nutricional V4.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -32,13 +32,47 @@
   }
   .wrap{max-width:920px;margin:0 auto;padding:40px 24px 80px;}
 
-  /* MODO PACIENTE - Ocultar elementos técnicos */
+  /* 📱 CONFIGURACIÓN EXTRACTO INTERFAZ PACIENTE (OCULTA TODO LO CLÍNICO) */
+  body.modo-paciente header,
+  body.modo-paciente .security-section,
+  body.modo-paciente .visit-tracker,
+  body.modo-paciente nav.tabs,
+  body.modo-paciente .panel:not(#t6),
   body.modo-paciente .prof-only,
-  body.modo-paciente .tabs button[data-tab="t2"],
-  body.modo-paciente .tabs button[data-tab="t3"],
-  body.modo-paciente .tabs button[data-tab="t5"] { display: none !important; }
+  body.modo-paciente .btn.ghost { 
+    display: none !important; 
+  }
+  
+  /* Ajuste de márgenes para el celular del paciente */
+  body.modo-paciente .wrap {
+    padding-top: 20px;
+    max-width: 500px;
+  }
 
-  /* HEADER */
+  /* HEADER PACIENTE */
+  .header-paciente {
+    display: none;
+    text-align: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 15px;
+  }
+  body.modo-paciente .header-paciente {
+    display: block;
+  }
+  .header-paciente h2 {
+    font-family: 'Fraunces', serif;
+    color: var(--green-deep);
+    margin: 0 0 5px 0;
+    font-size: 26px;
+  }
+  .header-paciente p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* HEADER ORIGINAL */
   header{
     display:flex;
     justify-content:space-between;
@@ -209,7 +243,7 @@
     display:block;
     cursor:crosshair;
     width:100%;
-    height:150px;
+    height:180px;
     background:#fff;
   }
   .signature-buttons{
@@ -291,7 +325,8 @@
     border:1px solid var(--green);
     cursor:pointer;
   }
-  .btn.primary{background:var(--green);color:#fff;border-color:var(--green);}
+  .btn.primary{background:var(--green);color:#fff;border-color:var(--green);width: 100%;}
+  body:not(.modo-paciente) .btn.primary { width: auto; }
   .btn.primary:disabled{background:var(--ink-soft);border-color:var(--ink-soft);cursor:not-allowed;}
   .btn.qr{background:var(--ochre);color:white;border-color:var(--ochre);}
   .btn.ghost{background:transparent;color:var(--ink-soft);border-color:var(--line);}
@@ -308,6 +343,11 @@
 <body>
 <div class="wrap">
 
+  <div class="header-paciente">
+    <h2>Consentimiento de Atención</h2>
+    <p id="pacienteIdentificado">Paciente: Cargando...</p>
+  </div>
+
   <header>
     <div>
       <div class="brand-eyebrow">Historia Clínica Nutricional</div>
@@ -315,7 +355,7 @@
     </div>
     <div class="meta-box prof-only">
       <strong id="profNameDisplay">Lic. Control Nutricional</strong>
-      <span id="profRegDisplay">Registro Activo Backend V3</span><br>
+      <span id="profRegDisplay">Registro Activo Backend V4.3</span><br>
       <span id="consultaDate"></span>
     </div>
   </header>
@@ -389,7 +429,7 @@
     <div class="divider"></div>
 
     <div class="grid">
-      <div class="field"><label>Antecedentes mórbidos personales</label><textarea id="Antecedentes_Personales" placeholder="Diabetes, hipertensión..."></textarea></div>
+      <div class="field"><label>Antecedentes mórbidos personales</label><textarea id="Antecedentes_Personales" placeholder="Diabetes, hypertension..."></textarea></div>
       <div class="field"><label>Antecedentes quirúrgicos</label><textarea id="Antecedentes_Quirurgicos" placeholder="Cirugías relevantes..."></textarea></div>
       <div class="field full"><label>Antecedentes familiares</label><textarea id="Antecedentes_Familiares" placeholder="Enfermedades hereditarias..."></textarea></div>
     </div>
@@ -441,34 +481,36 @@
   </div>
 
   <div class="panel" id="t6">
-    <p class="section-title">Consentimiento y Firma</p>
+    <p class="section-title prof-only">Consentimiento y Firma</p>
     <div class="consent-box" style="margin-bottom:15px;">
       <p><strong>Declaración de Consentimiento Informado</strong></p>
-      <p>Acepto el tratamiento nutricional y autorizo el uso de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
+      <p>Acepto el tratamiento nutricional sugerido y autorizo el almacenamiento de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
       <label><input type="checkbox" id="checkConsent"> Acepto términos y condiciones</label>
       <label><input type="checkbox" id="privacidadCheck"> Autorizo el tratamiento de mis datos personales</label>
     </div>
     <div class="signature-box">
-      <label>Firme dentro del recuadro:</label>
+      <label>Por favor, firme con su dedo dentro del recuadro:</label>
       <canvas id="signaturePad"></canvas>
       <div class="signature-buttons">
         <button type="button" onclick="limpiarFirma()">Limpiar Firma</button>
       </div>
     </div>
 
-    <label style="margin-top:20px;">Adjuntar Documentación Adicional (Estudios, DNI, etc.)</label>
-    <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-      <p>📎 Haz clic para cargar imagen o arrastra aquí</p>
-      <input type="file" id="fileInput" accept="image/*">
+    <div class="prof-only">
+      <label style="margin-top:20px;">Adjuntar Documentación Adicional (Estudios, DNI, etc.)</label>
+      <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+        <p>📎 Haz clic para cargar imagen o arrastra aquí</p>
+        <input type="file" id="fileInput" accept="image/*">
+      </div>
+      <p id="fileNameDisplay" style="font-size:12px; color:var(--ink-soft); margin-top:8px;"></p>
     </div>
-    <p id="fileNameDisplay" style="font-size:12px; color:var(--ink-soft); margin-top:8px;"></p>
   </div>
 
   <div class="form-actions">
     <button class="btn ghost" onclick="resetForm()">Limpiar Formulario</button>
-    <div style="display:flex; gap:10px;">
+    <div style="display:flex; gap:10px; width: 100%; justify-content: flex-end;">
       <button class="btn qr prof-only" id="btnQR" onclick="generarQR()">📱 QR Consentimiento</button>
-      <button class="btn primary" id="btnGuardar" onclick="enviarFormulario()">✓ Guardar Consulta</button>
+      <button class="btn primary" id="btnGuardar" onclick="enviarFormulario()">✓ Enviar Firma y Datos</button>
     </div>
   </div>
 
@@ -484,19 +526,27 @@
 </div>
 
 <script>
-  // URL REAL DE TU BACKEND CONFIGURADO
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNAs34u1MeBNyoKwRDR98rPpaJ4bCwGKAsy61XYUHYP3ruoX5tb9_0-_83HxzEvmk1/exec";
   let canvas, ctx, drawing = false;
   let fileBase64 = "";
+  let esModoPaciente = false;
 
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     
     if(params.get('modo') === 'paciente') {
+      esModoPaciente = true;
       document.body.classList.add('modo-paciente');
-      if(params.get('dni')) document.getElementById('DNI_Paciente').value = params.get('dni');
-      if(params.get('nombre')) document.getElementById('Nombre_Paciente').value = decodeURIComponent(params.get('nombre'));
-      if(params.get('qr') === 'consentimiento') cambiarTab('t6');
+      
+      const dni = params.get('dni') || '';
+      const nombre = params.get('nombre') ? decodeURIComponent(params.get('nombre')) : '';
+      
+      document.getElementById('DNI_Paciente').value = dni;
+      document.getElementById('Nombre_Paciente').value = nombre;
+      document.getElementById('pacienteIdentificado').textContent = `Paciente: ${nombre} (${dni})`;
+      
+      // Forzar visualización de la pestaña de consentimiento
+      cambiarTab('t6');
     }
     
     document.getElementById('consultaDate').textContent = 'Consulta: ' + new Date().toLocaleDateString();
@@ -532,7 +582,7 @@
     canvas = document.getElementById('signaturePad');
     ctx = canvas.getContext('2d');
     canvas.width = canvas.offsetWidth; 
-    canvas.height = 150;
+    canvas.height = 180;
 
     canvas.addEventListener('mousedown', () => drawing = true);
     canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
@@ -556,7 +606,7 @@
   function dibujarMouse(e) {
     if(!drawing) return;
     const r = canvas.getBoundingClientRect();
-    ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#23281F';
+    ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#23281F';
     ctx.lineTo(e.clientX - r.left, e.clientY - r.top);
     ctx.stroke();
   }
@@ -565,7 +615,7 @@
     if(!drawing) return;
     const r = canvas.getBoundingClientRect();
     const touch = e.touches[0];
-    ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#23281F';
+    ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#23281F';
     ctx.lineTo(touch.clientX - r.left, touch.clientY - r.top);
     ctx.stroke();
     e.preventDefault();
@@ -585,7 +635,7 @@
     const nomPac = document.getElementById('Nombre_Paciente').value.trim();
     if(!dniPac || !nomPac) return alert("Escribe el Nombre y DNI del paciente en la pestaña 01.");
     const urlBase = window.location.href.split('?')[0];
-    const urlDinamica = `${urlBase}?modo=paciente&qr=consentimiento&dni=${dniPac}&nombre=${encodeURIComponent(nomPac)}`;
+    const urlDinamica = `${urlBase}?modo=paciente&dni=${dniPac}&nombre=${encodeURIComponent(nomPac)}`;
     document.getElementById('qrcode').innerHTML = '';
     new QRCode(document.getElementById('qrcode'), { text: urlDinamica, width: 180, height: 180 });
     document.getElementById('qrModal').classList.add('active');
@@ -597,10 +647,8 @@
   function buscarPaciente() {
     const dni = document.getElementById('dniSearch').value.trim();
     const pin = document.getElementById('pinInput').value.trim();
-    
     if(!dni) return alert("Ingresa un DNI.");
-    if(pin.length !== 4) return alert("Por favor, ingresa un PIN válido de 4 dígitos.");
-    
+    if(pin.length !== 4) return alert("Por favor, ingresa un PIN válido.");
     document.getElementById('btnBuscar').textContent = "Buscando...";
     
     fetch(`${SCRIPT_URL}?action=buscarPaciente&dni=${dni}&pin=${pin}`)
@@ -645,23 +693,29 @@
           document.getElementById('Requerimiento').value = res.data.Requerimiento || '';
           document.getElementById('Macros').value = res.data.Macros || '';
           document.getElementById('Plan_Trabajo').value = res.data.Plan_Trabajo || '';
-          alert("Paciente encontrado e historial cargado con éxito.");
+          alert("Paciente encontrado con éxito.");
         } else {
-          alert(res.message || "Error al procesar la solicitud.");
+          alert(res.message || "Error.");
         }
       })
-      .catch(err => alert("Error de comunicación: " + err.toString()))
+      .catch(err => alert("Error: " + err.toString()))
       .finally(() => { document.getElementById('btnBuscar').textContent = "Buscar"; });
   }
 
   function enviarFormulario() {
     const dniPac = document.getElementById('DNI_Paciente').value.trim();
     const nomPac = document.getElementById('Nombre_Paciente').value.trim();
-    const pin = document.getElementById('pinInput').value.trim();
+    const pin = document.getElementById('pinInput') ? document.getElementById('pinInput').value.trim() : "";
 
-    if(!dniPac || !nomPac) return alert("El nombre y DNI son campos obligatorios.");
-    if(!document.getElementById('checkConsent').checked) return alert("Debe marcar la casilla de aceptación de consentimiento.");
-    if(pin.length !== 4) return alert("Por favor, introduce tu PIN de acceso para validar la firma e instruir el guardado.");
+    if(!dniPac || !nomPac) return alert("Faltan datos del paciente.");
+    if(!document.getElementById('checkConsent').checked || !document.getElementById('privacidadCheck').checked) {
+      return alert("Debe aceptar el consentimiento y el tratamiento de datos para continuar.");
+    }
+    if(isCanvasBlank(canvas)) return alert("Por favor, estampe su firma antes de enviar.");
+    
+    if(!esModoPaciente && pin.length !== 4) {
+      return alert("Introduce tu PIN profesional para autorizar.");
+    }
 
     const btnGuardar = document.getElementById('btnGuardar');
     btnGuardar.disabled = true; btnGuardar.textContent = "Guardando...";
@@ -705,9 +759,10 @@
       Otro_Examen: document.getElementById('Otro_Examen').value,
       Otro_Examen_Interp: document.getElementById('Otro_Examen_Interp').value,
       Diagnostico_DNI: document.getElementById('Diagnostico_DNI').value,
-      Firma_Base64: isCanvasBlank(canvas) ? "" : canvas.toDataURL(),
+      Firma_Base64: canvas.toDataURL(),
       Adjunto_Base64: fileBase64,
-      pin: pin // Enviamos el PIN en el cuerpo para validar el doPost
+      pin: pin,
+      modo_origen: esModoPaciente ? "paciente" : "profesional"
     };
 
     fetch(SCRIPT_URL, {
@@ -716,9 +771,20 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     })
-    .then(() => { alert('✓ Consulta guardada con éxito.'); limpiarFirma(); })
-    .catch(err => alert('Error en envío: ' + err.toString()))
-    .finally(() => { btnGuardar.disabled = false; btnGuardar.textContent = "✓ Guardar Consulta"; });
+    .then(() => { 
+      alert('✓ Consentimiento y firma enviados con éxito.'); 
+      limpiarFirma(); 
+      if(esModoPaciente) {
+         document.querySelector('.wrap').innerHTML = "<div style='text-align:center; padding:60px 10px;'><h2 style='color:var(--success);font-family:Fraunces,serif;margin-bottom:10px;'>¡Firma enviada!</h2><p style='color:var(--ink-soft); font-size:15px;'>Tus datos y consentimiento se han registrado correctamente en la consulta. Ya puedes devolverle el celular al profesional o cerrar esta ventana.</p></div>";
+      }
+    })
+    .catch(err => alert('Error: ' + err.toString()))
+    .finally(() => { 
+      if(!esModoPaciente) {
+        btnGuardar.disabled = false; 
+        btnGuardar.textContent = "✓ Guardar Consulta"; 
+      }
+    });
   }
 
   function isCanvasBlank(canvas) {
