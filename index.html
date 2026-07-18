@@ -87,7 +87,6 @@
     font-size:14px;
   }
   .security-grid button{
-    padding:10px 166px;
     padding:10px 16px;
     background:var(--green);
     color:#fff;
@@ -400,7 +399,7 @@
     </div>
   </div>
 
-  <!-- PANEL 2: ANTROPOMETRÍA EXTENDIDA -->
+  <!-- PANEL 2: ANTROPOMETRÍA -->
   <div class="panel prof-only" id="t2">
     <p class="section-title">Evaluación antropométrica</p>
     <p class="section-sub">Métricas de control evolutivo.</p>
@@ -420,7 +419,7 @@
     </table>
   </div>
 
-  <!-- PANEL 3: INDICADORES BIOQUÍMICOS -->
+  <!-- PANEL 3: BIOQUÍMICOS -->
   <div class="panel prof-only" id="t3">
     <p class="section-title">Indicadores bioquímicos</p>
     <p class="section-sub">Resultados analíticos de laboratorio aportados.</p>
@@ -606,10 +605,15 @@
 
   function buscarPaciente() {
     const dni = document.getElementById('dniSearch').value.trim();
+    const pin = document.getElementById('pinInput').value.trim();
+    
     if(!dni) return alert("Ingresa un DNI.");
+    if(pin.length !== 4) return alert("Por favor, ingresa un PIN válido de 4 dígitos.");
+    
     document.getElementById('btnBuscar').textContent = "Buscando...";
     
-    fetch(`${SCRIPT_URL}?action=buscarPaciente&dni=${dni}`)
+    // Inyección de seguridad: Pasamos DNI y PIN en la URL para interceptación del doGet
+    fetch(`${SCRIPT_URL}?action=buscarPaciente&dni=${dni}&pin=${pin}`)
       .then(res => res.json())
       .then(res => {
         if(res.success && res.data) {
@@ -651,20 +655,21 @@
           document.getElementById('Requerimiento').value = res.data.Requerimiento || '';
           document.getElementById('Macros').value = res.data.Macros || '';
           document.getElementById('Plan_Trabajo').value = res.data.Plan_Trabajo || '';
-          alert("Paciente encontrado e historial cargado.");
+          alert("Paciente encontrado e historial cargado con éxito.");
         } else {
-          alert("No se encontró ningún historial.");
+          // Captura el mensaje descriptivo del servidor (ej: PIN incorrecto)
+          alert(res.message || "Error al procesar la solicitud.");
         }
       })
-      .catch(err => alert("Error de servidor: " + err.toString()))
+      .catch(err => alert("Error de comunicación: " + err.toString()))
       .finally(() => { document.getElementById('btnBuscar').textContent = "Buscar"; });
   }
 
   function enviarFormulario() {
     const dniPac = document.getElementById('DNI_Paciente').value.trim();
     const nomPac = document.getElementById('Nombre_Paciente').value.trim();
-    if(!dniPac || !nomPac) return alert("El nombre y DNI son obligatorios.");
-    if(!document.getElementById('checkConsent').checked) return alert("Debe marcar el casillero de consentimiento.");
+    if(!dniPac || !nomPac) return alert("El nombre y DNI son campos obligatorios.");
+    if(!document.getElementById('checkConsent').checked) return alert("Debe marcar la casilla de aceptación de consentimiento.");
 
     const btnGuardar = document.getElementById('btnGuardar');
     btnGuardar.disabled = true; btnGuardar.textContent = "Guardando...";
@@ -720,7 +725,7 @@
       body: JSON.stringify(formData)
     })
     .then(() => { alert('✓ Consulta guardada y transmitida con éxito.'); limpiarFirma(); })
-    .catch(err => alert('Error: ' + err.toString()))
+    .catch(err => alert('Error en envío: ' + err.toString()))
     .finally(() => { btnGuardar.disabled = false; btnGuardar.textContent = "✓ Guardar Consulta"; });
   }
 
