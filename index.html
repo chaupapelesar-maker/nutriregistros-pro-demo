@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NutriRegistros Pro - Sistema de Gestión Nutricional V4.3</title>
+<title>NutriRegistros Pro - Sistema de Gestión Nutricional V4.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -309,6 +309,21 @@
   .consent-box label{display:flex;align-items:flex-start;gap:10px;font-weight:500;color:var(--ink);margin-top:12px;}
   .consent-box input{width:auto;margin-top:2px;}
 
+  /* BANNER DE CONSENTIMIENTO YA FIRMADO */
+  .consent-ok-banner{
+    display:none;
+    background:#EBF3EB;
+    border:1px solid var(--success);
+    color:var(--green-deep);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    font-size:13.5px;
+    line-height:1.6;
+    margin-bottom:15px;
+  }
+  .consent-ok-banner strong{display:block;font-size:14.5px;margin-bottom:4px;}
+  .consent-ok-banner.active{display:block;}
+
   /* BOTONES */
   .form-actions{
     display:flex;
@@ -355,7 +370,7 @@
     </div>
     <div class="meta-box prof-only">
       <strong id="profNameDisplay">Lic. Control Nutricional</strong>
-      <span id="profRegDisplay">Registro Activo Backend V4.3</span><br>
+      <span id="profRegDisplay">Registro Activo Backend V4.4</span><br>
       <span id="consultaDate"></span>
     </div>
   </header>
@@ -482,17 +497,25 @@
 
   <div class="panel" id="t6">
     <p class="section-title prof-only">Consentimiento y Firma</p>
-    <div class="consent-box" style="margin-bottom:15px;">
-      <p><strong>Declaración de Consentimiento Informado</strong></p>
-      <p>Acepto el tratamiento nutricional sugerido y autorizo el almacenamiento de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
-      <label><input type="checkbox" id="checkConsent"> Acepto términos y condiciones</label>
-      <label><input type="checkbox" id="privacidadCheck"> Autorizo el tratamiento de mis datos personales</label>
+
+    <div class="consent-ok-banner prof-only" id="consentOkBanner">
+      <strong>✓ Consentimiento informado ya firmado</strong>
+      Este paciente ya aceptó los términos y firmó en una consulta anterior (<span id="fechaFirmaPrevia">—</span>). No es necesario volver a firmar para guardar esta evolución.
     </div>
-    <div class="signature-box">
-      <label>Por favor, firme con su dedo dentro del recuadro:</label>
-      <canvas id="signaturePad"></canvas>
-      <div class="signature-buttons">
-        <button type="button" onclick="limpiarFirma()">Limpiar Firma</button>
+
+    <div id="zonaConsentimiento">
+      <div class="consent-box" style="margin-bottom:15px;">
+        <p><strong>Declaración de Consentimiento Informado</strong></p>
+        <p>Acepto el tratamiento nutricional sugerido y autorizo el almacenamiento de mis datos clínicos de forma confidencial bajo el sistema NutriRegistros Pro.</p>
+        <label><input type="checkbox" id="checkConsent"> Acepto términos y condiciones</label>
+        <label><input type="checkbox" id="privacidadCheck"> Autorizo el tratamiento de mis datos personales</label>
+      </div>
+      <div class="signature-box">
+        <label>Por favor, firme con su dedo dentro del recuadro:</label>
+        <canvas id="signaturePad"></canvas>
+        <div class="signature-buttons">
+          <button type="button" onclick="limpiarFirma()">Limpiar Firma</button>
+        </div>
       </div>
     </div>
 
@@ -530,6 +553,10 @@
   let canvas, ctx, drawing = false;
   let fileBase64 = "";
   let esModoPaciente = false;
+
+  // NUEVO: estado de consentimiento ya existente para el paciente cargado
+  let consentimientoPrevioExiste = false;
+  let firmaPreviaBase64 = "";
 
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
@@ -644,6 +671,21 @@
   function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
   function resetForm() { if(confirm("¿Limpiar todo el formulario?")) location.reload(); }
 
+  // NUEVO: activa/desactiva el bloque visual de "ya firmado" en la pestaña de Consentimiento
+  function mostrarConsentimientoYaFirmado(fechaTexto) {
+    consentimientoPrevioExiste = true;
+    document.getElementById('consentOkBanner').classList.add('active');
+    document.getElementById('zonaConsentimiento').style.display = 'none';
+    document.getElementById('fechaFirmaPrevia').textContent = fechaTexto || 'consulta previa';
+  }
+
+  function ocultarConsentimientoYaFirmado() {
+    consentimientoPrevioExiste = false;
+    firmaPreviaBase64 = "";
+    document.getElementById('consentOkBanner').classList.remove('active');
+    document.getElementById('zonaConsentimiento').style.display = 'block';
+  }
+
   function buscarPaciente() {
     const dni = document.getElementById('dniSearch').value.trim();
     const pin = document.getElementById('pinInput').value.trim();
@@ -693,6 +735,15 @@
           document.getElementById('Requerimiento').value = res.data.Requerimiento || '';
           document.getElementById('Macros').value = res.data.Macros || '';
           document.getElementById('Plan_Trabajo').value = res.data.Plan_Trabajo || '';
+
+          // NUEVO: si ya existe una firma histórica para este paciente, no volver a exigirla
+          if(res.data.Firma_Base64) {
+            firmaPreviaBase64 = res.data.Firma_Base64;
+            mostrarConsentimientoYaFirmado(res.data.Fecha_Consulta || '');
+          } else {
+            ocultarConsentimientoYaFirmado();
+          }
+
           alert("Paciente encontrado con éxito.");
         } else {
           alert(res.message || "Error.");
@@ -708,10 +759,17 @@
     const pin = document.getElementById('pinInput') ? document.getElementById('pinInput').value.trim() : "";
 
     if(!dniPac || !nomPac) return alert("Faltan datos del paciente.");
-    if(!document.getElementById('checkConsent').checked || !document.getElementById('privacidadCheck').checked) {
-      return alert("Debe aceptar el consentimiento y el tratamiento de datos para continuar.");
+
+    // NUEVO: si el paciente ya tiene consentimiento firmado previamente Y estamos en modo profesional,
+    // no se exige volver a tildar los checkboxes ni volver a firmar.
+    const requiereConsentimientoNuevo = !(consentimientoPrevioExiste && !esModoPaciente);
+
+    if(requiereConsentimientoNuevo) {
+      if(!document.getElementById('checkConsent').checked || !document.getElementById('privacidadCheck').checked) {
+        return alert("Debe aceptar el consentimiento y el tratamiento de datos para continuar.");
+      }
+      if(isCanvasBlank(canvas)) return alert("Por favor, estampe su firma antes de enviar.");
     }
-    if(isCanvasBlank(canvas)) return alert("Por favor, estampe su firma antes de enviar.");
     
     if(!esModoPaciente && pin.length !== 4) {
       return alert("Introduce tu PIN profesional para autorizar.");
@@ -721,6 +779,11 @@
     btnGuardar.disabled = true; btnGuardar.textContent = "Guardando...";
 
     const expPreviaChecked = document.querySelector('input[name="Experiencia_Previa"]:checked');
+
+    // Si no se pidió firma nueva (consentimiento previo ya existente), se conserva la firma histórica
+    const firmaAEnviar = requiereConsentimientoNuevo
+      ? canvas.toDataURL()
+      : (firmaPreviaBase64 || (isCanvasBlank(canvas) ? "" : canvas.toDataURL()));
 
     const formData = {
       Fecha_Consulta: new Date().toLocaleDateString(),
@@ -759,7 +822,7 @@
       Otro_Examen: document.getElementById('Otro_Examen').value,
       Otro_Examen_Interp: document.getElementById('Otro_Examen_Interp').value,
       Diagnostico_DNI: document.getElementById('Diagnostico_DNI').value,
-      Firma_Base64: canvas.toDataURL(),
+      Firma_Base64: firmaAEnviar,
       Adjunto_Base64: fileBase64,
       pin: pin,
       modo_origen: esModoPaciente ? "paciente" : "profesional"
