@@ -35,7 +35,6 @@
   /* 📱 CONFIGURACIÓN MODO PACIENTE (EXTRACTO EXCLUSIVO) */
   body.modo-paciente header,
   body.modo-paciente .app-screen,
-  body.modo-paciente .visit-tracker,
   body.modo-paciente nav.tabs,
   body.modo-paciente .prof-only { 
     display: none !important; 
@@ -143,22 +142,6 @@
   }
   .btn-huge:hover { background: #b56c2f; }
 
-  /* VISIT TRACKER */
-  .visit-tracker{
-    display:flex;
-    gap:0;
-    margin:28px 0 36px;
-    border:1px solid var(--line);
-    background:var(--panel);
-    border-radius:var(--radius);
-    overflow:hidden;
-  }
-  .visit-col{ flex:1; padding:14px 18px; border-right:1px solid var(--line); position:relative; }
-  .visit-col:last-child{border-right:none;}
-  .visit-col.active{background:var(--green);color:#fff;}
-  .visit-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin-bottom:4px;}
-  .visit-date{font-family:'Fraunces',serif;font-size:17px;}
-
   /* TABS */
   nav.tabs{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:28px; border-bottom:1px solid var(--line); padding-bottom:0; }
   nav.tabs button{
@@ -220,11 +203,6 @@
   .consent-ok-banner.active{display:block;}
   .consent-actions-v5 { display: flex; gap: 12px; margin-top: 15px; }
 
-  /* CARGA DE ARCHIVOS */
-  .file-upload{ border:2px dashed var(--green); border-radius:var(--radius); padding:20px; text-align:center; cursor:pointer; transition:all .3s; }
-  .file-upload:hover{ background:var(--ochre-soft); border-color:var(--ochre); }
-  .file-upload input[type=file]{ display:none; }
-
   /* QR MODAL */
   .qr-modal{ display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
   .qr-modal.active{ display:flex; }
@@ -243,8 +221,6 @@
   @media (max-width:640px){
     .grid, .grid.g3{grid-template-columns:1fr;}
     .form-actions{flex-direction:column; gap:10px;}
-    .visit-tracker{flex-direction:column;}
-    .visit-col{border-right:none;border-bottom:1px solid var(--line);}
     .consent-actions-v5 { flex-direction: column; }
   }
 </style>
@@ -299,21 +275,6 @@
   </div>
 
   <div class="app-screen" id="screen-hc">
-    
-    <div class="visit-tracker prof-only">
-      <div class="visit-col active">
-        <div class="visit-label">Ingreso</div>
-        <div class="visit-date" id="visitDate1">— pendiente —</div>
-      </div>
-      <div class="visit-col">
-        <div class="visit-label">1er Control</div>
-        <div class="visit-date" id="visitDate2">— pendiente —</div>
-      </div>
-      <div class="visit-col">
-        <div class="visit-label">2do Control</div>
-        <div class="visit-date" id="visitDate3">— pendiente —</div>
-      </div>
-    </div>
 
     <nav class="tabs prof-only">
       <button class="active" data-tab="t1"><span class="num">01</span>Datos y anamnesis</button>
@@ -391,6 +352,8 @@
           <tr><td>Triglicéridos</td><td><input type="text" id="Trigliceridos"></td><td>&lt;150 mg/dl</td><td><input type="text" id="Trigliceridos_Interp"></td></tr>
           <tr><td>HbA1c</td><td><input type="text" id="HbA1c"></td><td>&lt;7%</td><td><input type="text" id="HbA1c_Interp"></td></tr>
           <tr><td>Otro examen</td><td><input type="text" id="Otro_Examen"></td><td>—</td><td><input type="text" id="Otro_Examen_Interp"></td></tr>
+          <tr><td>Otro examen 2</td><td><input type="text" id="Otro_Examen2"></td><td>—</td><td><input type="text" id="Otro_Examen2_Interp"></td></tr>
+          <tr><td>Otro examen 3</td><td><input type="text" id="Otro_Examen3"></td><td>—</td><td><input type="text" id="Otro_Examen3_Interp"></td></tr>
         </tbody>
       </table>
     </div>
@@ -439,14 +402,6 @@
         </div>
       </div>
 
-      <div class="prof-only" style="margin-top: 25px;">
-        <label>Adjuntar Documentación Adicional (Estudios, Copias DNI, etc.)</label>
-        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-          <p>📎 Haz clic para cargar imagen o arrastra aquí</p>
-          <input type="file" id="fileInput" accept="image/*">
-        </div>
-        <p id="fileNameDisplay" style="font-size:12px; color:var(--ink-soft); margin-top:8px;"></p>
-      </div>
     </div>
 
     <div class="form-actions">
@@ -473,7 +428,6 @@
   const PIN_ESTATICO = "3308"; // PIN de validación local inmediata
   
   let canvas, ctx, drawing = false;
-  let fileBase64 = "";
   let esModoPaciente = false;
   let consentimientoPrevioExiste = false;
   let firmaPreviaBase64 = "";
@@ -498,7 +452,6 @@
     }
     
     document.getElementById('consultaDate').textContent = 'Consulta: ' + new Date().toLocaleDateString();
-    document.getElementById('visitDate1').textContent = new Date().toLocaleDateString();
     
     document.querySelectorAll('nav.tabs button').forEach(btn => {
       btn.onclick = () => cambiarTab(btn.dataset.tab);
@@ -515,16 +468,6 @@
       pesoInput.addEventListener('input', calcularIMC);
       tallaInput.addEventListener('input', calcularIMC);
     }
-
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if(file) {
-        document.getElementById('fileNameDisplay').textContent = "✓ Cargado: " + file.name;
-        const reader = new FileReader();
-        reader.onload = function(evt) { fileBase64 = evt.target.result; };
-        reader.readAsDataURL(file);
-      }
-    });
 
     // Setup Canvas Firma
     canvas = document.getElementById('signaturePad');
@@ -731,6 +674,10 @@
           document.getElementById('HbA1c_Interp').value = res.data.HbA1c_Interp || '';
           document.getElementById('Otro_Examen').value = res.data.Otro_Examen || '';
           document.getElementById('Otro_Examen_Interp').value = res.data.Otro_Examen_Interp || '';
+          document.getElementById('Otro_Examen2').value = res.data.Otro_Examen2 || '';
+          document.getElementById('Otro_Examen2_Interp').value = res.data.Otro_Examen2_Interp || '';
+          document.getElementById('Otro_Examen3').value = res.data.Otro_Examen3 || '';
+          document.getElementById('Otro_Examen3_Interp').value = res.data.Otro_Examen3_Interp || '';
           document.getElementById('Diagnostico_DNI').value = res.data.Diagnostico_DNI || '';
           document.getElementById('Requerimiento').value = res.data.Requerimiento || '';
           document.getElementById('Macros').value = res.data.Macros || '';
@@ -798,13 +745,46 @@
   }
 
   // ACCIÓN PRINCIPAL: ENVIAR FORMULARIO (BOTÓN GUARDAR EVOLUCIÓN CLINICA)
-  function enviarFormulario() {
+  // FIX BUG 3: si el botón se pulsa en modo paciente (celular, vía QR), esto NO debe
+  // crear una evolución clínica vacía. El paciente solo firma el consentimiento;
+  // el registro clínico completo lo guarda el profesional desde su propio dispositivo.
+  async function enviarFormulario() {
+    if(esModoPaciente) {
+      return guardarSoloConsentimiento();
+    }
+
     const dniPac = document.getElementById('DNI_Paciente').value.trim();
     const nomPac = document.getElementById('Nombre_Paciente').value.trim();
 
     if(!dniPac || !nomPac) return alert("Faltan datos de filiación del paciente (Nombre y DNI).");
 
-    // Recopilación total
+    // FIX BUG 2: no confiar en el estado local (consentimientoPrevioExiste), que puede
+    // haber quedado desactualizado si el paciente firmó desde su celular vía QR mientras
+    // el profesional seguía en esta misma pantalla. Antes de exigir una firma nueva,
+    // se revalida en vivo contra el servidor (única fuente de verdad).
+    if(!consentimientoPrevioExiste) {
+      try {
+        const chequeo = await fetch(`${SCRIPT_URL}?action=buscarPaciente&dni=${dniPac}`).then(r => r.json());
+        if(chequeo.success && chequeo.data && (chequeo.data.Firma_Base64 || chequeo.data.Consentimiento_Vigente === "VIGENTE")) {
+          firmaPreviaBase64 = chequeo.data.Firma_Base64 || "VIGENTE";
+          mostrarConsentimientoYaFirmado(chequeo.data.Fecha_Consulta || 'atención previa', chequeo.data.Consentimiento_Pdf_Url || "");
+        }
+      } catch(e) {
+        // Si la verificación en vivo falla (ej. sin red), seguimos con el flujo normal abajo.
+      }
+    }
+
+    // Si sigue sin haber consentimiento previo vigente, validar la firma integrada en esta pantalla
+    if(!consentimientoPrevioExiste) {
+      if(!document.getElementById('checkConsent').checked || !document.getElementById('privacidadCheck').checked) {
+        return alert("Atención: El paciente debe aceptar los términos de consentimiento en la pestaña 05.");
+      }
+      if(bankruptCanvas(canvas)) {
+        return alert("Falta estampar la firma del paciente en la pestaña 05 antes de consolidar el registro.");
+      }
+    }
+
+    // Recopilación total (se arma después de la revalidación de consentimiento de arriba)
     const expPreviaNode = document.querySelector('input[name="Experiencia_Previa"]:checked');
     const formData = {
       action: "guardarEvolucionClinica",
@@ -838,26 +818,19 @@
       hbA1cInterp: document.getElementById('HbA1c_Interp').value,
       otroExamen: document.getElementById('Otro_Examen').value,
       otroExamenInterp: document.getElementById('Otro_Examen_Interp').value,
+      otroExamen2: document.getElementById('Otro_Examen2').value,
+      otroExamen2Interp: document.getElementById('Otro_Examen2_Interp').value,
+      otroExamen3: document.getElementById('Otro_Examen3').value,
+      otroExamen3Interp: document.getElementById('Otro_Examen3_Interp').value,
       diagnosticoDNI: document.getElementById('Diagnostico_DNI').value,
       requerimiento: document.getElementById('Requerimiento').value,
       macros: document.getElementById('Macros').value,
       planTrabajo: document.getElementById('Plan_Trabajo').value,
-      fileAdditional: fileBase64,
       consentimientoVigenteStatus: (consentimientoPrevioExiste || !bankruptCanvas(canvas)) ? "VIGENTE" : "PENDIENTE",
-      firmaBase64: (consentimientoPrevioExiste) ? firmaPreviaBase64 : canvas.toDataURL(), 
+      firmaBase64: (consentimientoPrevioExiste) ? firmaPreviaBase64 : canvas.toDataURL(),
       timestamp: new Date().toISOString(),
       pin: PIN_ESTATICO
     };
-
-    // Si está en modo paciente o no hay consentimiento previo, validar la firma integrada
-    if(!consentimientoPrevioExiste) {
-      if(!document.getElementById('checkConsent').checked || !document.getElementById('privacidadCheck').checked) {
-        return alert("Atención: El paciente debe aceptar los términos de consentimiento en la pestaña 05.");
-      }
-      if(bankruptCanvas(canvas)) {
-        return alert("Falta estampar la firma del paciente en la pestaña 05 antes de consolidar el registro.");
-      }
-    }
 
     document.getElementById('btnGuardar').disabled = true;
     document.getElementById('btnGuardar').textContent = "Guardando...";
@@ -870,12 +843,8 @@
     .then(res => {
       if(res.success) {
         alert("✓ Registro Clínico Guardado Correctamente. Se ha generado la evolución en Sheets y el informe PDF en Google Drive.");
-        if(esModoPaciente) {
-          location.reload();
-        } else {
-          cambiarPantalla('screen-home');
-          document.getElementById('dniSearch').value = '';
-        }
+        cambiarPantalla('screen-home');
+        document.getElementById('dniSearch').value = '';
       } else {
         alert("Error devuelto por el servidor: " + res.message);
       }
