@@ -398,7 +398,7 @@
         
         <div class="consent-actions-v5 prof-only">
           <button class="btn qr" type="button" id="btnQR" onclick="generarQR()" style="flex: 1;">📱 Compartir QR al Paciente</button>
-          <button class="btn primary" type="button" onclick="guardarSoloConsentimiento()" style="flex: 1; background: var(--ochre); border-color: var(--ochre);">✓ Registrar Solo Firma Actual</button>
+          <button class="btn primary" type="button" id="btnSoloConsentimiento" onclick="guardarSoloConsentimiento()" style="flex: 1; background: var(--ochre); border-color: var(--ochre);">✓ Registrar Solo Firma Actual</button>
         </div>
       </div>
 
@@ -423,6 +423,18 @@
   </div>
 </div>
 
+<div class="qr-modal" id="firmaPendienteModal">
+  <div class="qr-content">
+    <h2>✓ Ficha Guardada</h2>
+    <p>Este paciente todavía no tiene el consentimiento firmado. ¿Cómo prefieres continuar?</p>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
+      <button class="btn qr" type="button" onclick="document.getElementById('firmaPendienteModal').classList.remove('active'); generarQR();">📱 Generar QR para que firme desde su celular</button>
+      <button class="btn primary" type="button" onclick="firmarAhoraEnEsteDispositivo()">✍️ Firmar aquí, en este dispositivo</button>
+      <button class="btn ghost" type="button" onclick="firmarMasTarde()">Más tarde</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNAs34u1MeBNyoKwRDR98rPpaJ4bCwGKAsy61XYUHYP3ruoX5tb9_0-_83HxzEvmk1/exec";
   const PIN_ESTATICO = "3308"; // PIN de validación local inmediata
@@ -431,6 +443,16 @@
   let esModoPaciente = false;
   let consentimientoPrevioExiste = false;
   let firmaPreviaBase64 = "";
+  // FIX BUG "guardados duplicados": bandera compartida entre guardarSoloConsentimiento()
+  // y enviarFormulario(). Ambas escriben al mismo backend; sin esto, clics repetidos
+  // (o un doble-tap en celular) mientras la red está lenta disparan varios envíos en
+  // paralelo, generando carpetas y filas duplicadas.
+  // FIX: la firma (QR o en el mismo dispositivo) ahora solo se habilita DESPUÉS de que el
+  // profesional guardó la evolución al menos una vez en esta sesión (o si el paciente ya
+  // tenía consentimiento vigente de una atención anterior). Antes, firmar y guardar podían
+  // dispararse en cualquier orden y competían por crear la misma carpeta/fila en paralelo.
+  let puedeFirmar = false;
+  let envioEnCurso = false;
 
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
@@ -566,6 +588,9 @@
   }
 
   function generarQR() {
+    if(!puedeFirmar) {
+      return alert("Primero guarda la ficha clínica del paciente con el botón ✓ Guardar. Recién ahí se habilita la firma, para asegurar que la carpeta del paciente ya exista.");
+    }
     const dniPac = document.getElementById('DNI_Paciente').value.trim();
     const nomPac = document.getElementById('Nombre_Paciente').value.trim();
     if(!dniPac || !nomPac) return alert("Escribe el Nombre y DNI del paciente en la pestaña 01 para enlazar legalmente.");
@@ -591,6 +616,7 @@
 
   function mostrarConsentimientoYaFirmado(fechaTexto, pdfUrl = "") {
     consentimientoPrevioExiste = true;
+    puedeFirmar = true;
     document.getElementById('consentOkBanner').classList.add('active');
     document.getElementById('zonaConsentimiento').style.display = 'none';
     document.getElementById('fechaFirmaPrevia').textContent = fechaTexto || 'consulta previa';
@@ -619,6 +645,7 @@
   function ocultarConsentimientoYaFirmado() {
     consentimientoPrevioExiste = false;
     firmaPreviaBase64 = "";
+    puedeFirmar = false;
     document.getElementById('consentOkBanner').classList.remove('active');
     document.getElementById('zonaConsentimiento').style.display = 'block';
     document.getElementById('pdfViewerContainer').classList.remove('active');
@@ -708,16 +735,34 @@
       });
   }
 
-  // ACCIÓN EXCLUSIVA: GUARDAR SOLO CONSENTIMIENTO (DESDE LA PESTAÑA LEGAL)
+  // ACCIÓN EXCLUSIVA: GUARDAR SOLO CONSENTIMIENTO (DESDE LA PESTAÑA LEGAL, O DESDE EL CELULAR DEL PACIENTE)
   function guardarSoloConsentimiento() {
+    if(envioEnCurso) return; // Ya hay un guardado en curso: ignorar clics/taps repetidos.
+
+    // El paciente firmando desde su celular (vía QR) siempre está habilitado: el QR solo
+    // se genera después de que el profesional ya guardó la ficha. En cambio, si el
+    // profesional intenta firmar directamente desde este mismo dispositivo (botón
+    // "Registrar Solo Firma Actual"), sí se exige haber guardado antes, por la misma razón.
+    if(!esModoPaciente && !puedeFirmar) {
+      return alert("Primero guarda la ficha clínica del paciente con el botón ✓ Guardar. Recién ahí se habilita la firma, para asegurar que la carpeta del paciente ya exista.");
+    }
+
     const dniPac = document.getElementById('DNI_Paciente').value.trim();
     const nomPac = document.getElementById('Nombre_Paciente').value.trim();
-    
+
     if(!dniPac || !nomPac) return alert("Faltan el nombre y DNI del paciente.");
     if(!document.getElementById('checkConsent').checked || !document.getElementById('privacidadCheck').checked) {
       return alert("El paciente debe aceptar los términos y políticas en pantalla.");
     }
     if(bankruptCanvas(canvas)) return alert("El recuadro de firma se encuentra vacío.");
+
+    // FIX BUG "guardados duplicados": bloquear ANTES de cualquier operación asíncrona
+    // (incluyendo antes del fetch), no después. Así, si el usuario vuelve a tocar el botón
+    // mientras la firma se está subiendo, ese segundo toque no hace nada porque el botón
+    // ya está deshabilitado y envioEnCurso ya es true.
+    envioEnCurso = true;
+    const btn = document.getElementById('btnSoloConsentimiento');
+    if(btn) { btn.disabled = true; btn.textContent = "Procesando firma..."; }
 
     const payload = {
       action: "guardarConsentimientoAislado",
@@ -727,8 +772,6 @@
       timestamp: new Date().toISOString(),
       pin: PIN_ESTATICO
     };
-
-    alert("Procesando firma legal. Por favor espera...");
 
     fetch(SCRIPT_URL, {
       method: 'POST',
@@ -741,50 +784,44 @@
         mostrarConsentimientoYaFirmado(new Date().toLocaleDateString(), res.pdfUrl || "");
       } else { alert("Error: " + res.message); }
     })
-    .catch(err => alert("Error en envío: " + err.toString()));
+    .catch(err => alert("Error en envío: " + err.toString() + "\n\nSi esto ocurrió por conexión inestable, revisa el historial del paciente antes de volver a intentarlo: el guardado pudo haberse procesado igual en el servidor."))
+    .finally(() => {
+      envioEnCurso = false;
+      if(btn) { btn.disabled = false; btn.textContent = "✓ Registrar Solo Firma Actual"; }
+    });
   }
 
   // ACCIÓN PRINCIPAL: ENVIAR FORMULARIO (BOTÓN GUARDAR EVOLUCIÓN CLINICA)
   // FIX BUG 3: si el botón se pulsa en modo paciente (celular, vía QR), esto NO debe
   // crear una evolución clínica vacía. El paciente solo firma el consentimiento;
   // el registro clínico completo lo guarda el profesional desde su propio dispositivo.
+  //
+  // NUEVO FLUJO: guardar la ficha ya NO exige que el paciente haya firmado antes.
+  // Se guarda siempre; si hace falta firma, recién después se ofrece el QR o firmar
+  // en este mismo dispositivo (ver mostrarPopupFirmaPendiente). Esto evita por completo
+  // la carrera entre "guardar" y "firmar" compitiendo por crear la misma carpeta/fila.
   async function enviarFormulario() {
     if(esModoPaciente) {
       return guardarSoloConsentimiento();
     }
+    if(envioEnCurso) return; // Ya hay un guardado en curso: ignorar clics repetidos.
 
     const dniPac = document.getElementById('DNI_Paciente').value.trim();
     const nomPac = document.getElementById('Nombre_Paciente').value.trim();
 
     if(!dniPac || !nomPac) return alert("Faltan datos de filiación del paciente (Nombre y DNI).");
 
-    // FIX BUG 2: no confiar en el estado local (consentimientoPrevioExiste), que puede
-    // haber quedado desactualizado si el paciente firmó desde su celular vía QR mientras
-    // el profesional seguía en esta misma pantalla. Antes de exigir una firma nueva,
-    // se revalida en vivo contra el servidor (única fuente de verdad).
-    if(!consentimientoPrevioExiste) {
-      try {
-        const chequeo = await fetch(`${SCRIPT_URL}?action=buscarPaciente&dni=${dniPac}`).then(r => r.json());
-        if(chequeo.success && chequeo.data && (chequeo.data.Firma_Base64 || chequeo.data.Consentimiento_Vigente === "VIGENTE")) {
-          firmaPreviaBase64 = chequeo.data.Firma_Base64 || "VIGENTE";
-          mostrarConsentimientoYaFirmado(chequeo.data.Fecha_Consulta || 'atención previa', chequeo.data.Consentimiento_Pdf_Url || "");
-        }
-      } catch(e) {
-        // Si la verificación en vivo falla (ej. sin red), seguimos con el flujo normal abajo.
-      }
+    envioEnCurso = true;
+    const btnGuardar = document.getElementById('btnGuardar');
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = "Guardando...";
+
+    function liberarBoton() {
+      envioEnCurso = false;
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = "✓ Guardar";
     }
 
-    // Si sigue sin haber consentimiento previo vigente, validar la firma integrada en esta pantalla
-    if(!consentimientoPrevioExiste) {
-      if(!document.getElementById('checkConsent').checked || !document.getElementById('privacidadCheck').checked) {
-        return alert("Atención: El paciente debe aceptar los términos de consentimiento en la pestaña 05.");
-      }
-      if(bankruptCanvas(canvas)) {
-        return alert("Falta estampar la firma del paciente en la pestaña 05 antes de consolidar el registro.");
-      }
-    }
-
-    // Recopilación total (se arma después de la revalidación de consentimiento de arriba)
     const expPreviaNode = document.querySelector('input[name="Experiencia_Previa"]:checked');
     const formData = {
       action: "guardarEvolucionClinica",
@@ -826,14 +863,9 @@
       requerimiento: document.getElementById('Requerimiento').value,
       macros: document.getElementById('Macros').value,
       planTrabajo: document.getElementById('Plan_Trabajo').value,
-      consentimientoVigenteStatus: (consentimientoPrevioExiste || !bankruptCanvas(canvas)) ? "VIGENTE" : "PENDIENTE",
-      firmaBase64: (consentimientoPrevioExiste) ? firmaPreviaBase64 : canvas.toDataURL(),
       timestamp: new Date().toISOString(),
       pin: PIN_ESTATICO
     };
-
-    document.getElementById('btnGuardar').disabled = true;
-    document.getElementById('btnGuardar').textContent = "Guardando...";
 
     fetch(SCRIPT_URL, {
       method: 'POST',
@@ -842,18 +874,38 @@
     .then(res => res.json())
     .then(res => {
       if(res.success) {
-        alert("✓ Registro Clínico Guardado Correctamente. Se ha generado la evolución en Sheets y el informe PDF en Google Drive.");
-        cambiarPantalla('screen-home');
-        document.getElementById('dniSearch').value = '';
+        puedeFirmar = true; // Ya se guardó: la carpeta y la fila del paciente ya existen.
+        if(res.necesitaFirma) {
+          mostrarPopupFirmaPendiente();
+        } else {
+          alert("✓ Registro Clínico Guardado Correctamente. Se ha generado la evolución en Sheets y el informe PDF en Google Drive.");
+          cambiarPantalla('screen-home');
+          document.getElementById('dniSearch').value = '';
+        }
       } else {
         alert("Error devuelto por el servidor: " + res.message);
       }
     })
-    .catch(err => alert("Error crítico al subir: " + err.toString()))
-    .finally(() => {
-      document.getElementById('btnGuardar').disabled = false;
-      document.getElementById('btnGuardar').textContent = "✓ Guardar";
-    });
+    .catch(err => alert("Error crítico al subir: " + err.toString() + "\n\nSi esto ocurrió por conexión inestable, revisa el historial del paciente antes de volver a intentarlo: el guardado pudo haberse procesado igual en el servidor."))
+    .finally(liberarBoton);
+  }
+
+  // Popup posterior al guardado: solo aparece si el paciente todavía no tiene consentimiento
+  // vigente. Ofrece firmar por QR (celular del paciente) o directamente en este dispositivo.
+  function mostrarPopupFirmaPendiente() {
+    document.getElementById('firmaPendienteModal').classList.add('active');
+  }
+
+  function firmarAhoraEnEsteDispositivo() {
+    document.getElementById('firmaPendienteModal').classList.remove('active');
+    cambiarTab('t6');
+  }
+
+  function firmarMasTarde() {
+    document.getElementById('firmaPendienteModal').classList.remove('active');
+    alert("✓ Registro Clínico Guardado Correctamente. Recuerda que este paciente aún no tiene el consentimiento firmado.");
+    cambiarPantalla('screen-home');
+    document.getElementById('dniSearch').value = '';
   }
 </script>
 </body>
