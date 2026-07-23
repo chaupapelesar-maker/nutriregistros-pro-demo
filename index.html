@@ -258,8 +258,11 @@
 
   <div class="app-screen" id="screen-home">
     <div class="dash-container">
-      <h2>Panel de Gestión Clínica</h2>
-      
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">Panel de Gestión Clínica</h2>
+        <button class="btn ghost" type="button" style="width:auto; padding:8px 16px; font-size:13px;" onclick="cerrarSesion()">🔒 Salir</button>
+      </div>
+
       <div class="search-box">
         <label>Buscar Paciente Histórico</label>
         <div class="search-row">
@@ -275,6 +278,10 @@
   </div>
 
   <div class="app-screen" id="screen-hc">
+
+    <div class="prof-only" style="text-align:right; margin-bottom:12px;">
+      <button class="btn ghost" type="button" style="width:auto; padding:7px 16px; font-size:12px;" onclick="volverAlHomeOrReset()">← Salir / Buscar otro paciente</button>
+    </div>
 
     <nav class="tabs prof-only">
       <button class="active" data-tab="t1"><span class="num">01</span>Datos y anamnesis</button>
@@ -405,7 +412,7 @@
     </div>
 
     <div class="form-actions">
-      <button class="btn ghost" onclick="volverAlHomeOrReset()">Limpiar Formulario</button>
+      <button class="btn ghost" onclick="volverAlHomeOrReset()">← Volver al Inicio</button>
       <div style="display:flex; gap:10px; justify-content: flex-end;">
         <button class="btn primary" id="btnGuardar" onclick="enviarFormulario()">✓ Guardar</button>
       </div>
@@ -453,6 +460,12 @@
   // dispararse en cualquier orden y competían por crear la misma carpeta/fila en paralelo.
   let puedeFirmar = false;
   let envioEnCurso = false;
+  // FIX BUG "evolución duplicada tras firmar": una vez guardada la ficha en esta sesión,
+  // el mismo botón "Guardar" deja de re-enviar la evolución; solo sirve para volver al
+  // inicio. Esto es lo que evitaba que, tras firmar (QR o en el mismo dispositivo) y volver
+  // a esta pantalla, un clic en "Guardar" (pensando que era "salir") creara una segunda
+  // evolución idéntica.
+  let evolucionYaGuardada = false;
 
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
@@ -527,8 +540,19 @@
     }
   }
 
+  // Cierre de sesión manual: útil si el profesional debe dejar la PC sola o es compartida.
+  function cerrarSesion() {
+    if(confirm("¿Deseas cerrar sesión? Deberás ingresar el PIN nuevamente para continuar.")) {
+      document.getElementById('pinInput').value = '';
+      document.getElementById('dniSearch').value = '';
+      cambiarPantalla('screen-login');
+    }
+  }
+
   function abrirFichaNuevoPaciente() {
     ocultarConsentimientoYaFirmado();
+    evolucionYaGuardada = false;
+    document.getElementById('btnGuardar').textContent = "✓ Guardar";
     // Limpiar campos para evitar remanentes
     document.querySelectorAll('#screen-hc input:not([type=radio]), #screen-hc textarea').forEach(i => i.value = '');
     document.querySelectorAll('#screen-hc input[type=radio]').forEach(r => r.checked = false);
@@ -633,6 +657,21 @@
     }
   }
 
+  // Traduce errores técnicos de red/parseo a un mensaje entendible. Un "SyntaxError:
+  // Unexpected token '<'..." significa que la respuesta NO fue JSON (típicamente una
+  // página HTML de error, de autorización, o un portal cautivo del operador cuando la
+  // señal es muy débil), no un error del propio guardado.
+  function mensajeErrorFetch(err) {
+    const texto = err ? err.toString() : "Error desconocido";
+    if(texto.indexOf("SyntaxError") > -1 || texto.indexOf("Unexpected token") > -1) {
+      return "No se pudo interpretar la respuesta del servidor (posible corte de señal a mitad de la solicitud). Espera a tener buena conexión, vuelve a buscar al paciente para confirmar el estado, y recién ahí reintenta.";
+    }
+    if(texto.indexOf("Failed to fetch") > -1 || texto.indexOf("NetworkError") > -1) {
+      return "No hay conexión a internet en este momento. Verifica tu señal e intenta de nuevo.";
+    }
+    return "Error de comunicación: " + texto;
+  }
+
   function bankruptCanvas(c) {
     // Guarda defensiva: si el canvas todavía no tiene dimensiones válidas
     // (por ejemplo, la pestaña 06 nunca se llegó a mostrar), tratarlo como "vacío"
@@ -665,6 +704,8 @@
       .then(res => res.json())
       .then(res => {
         if(res.success && res.data) {
+          evolucionYaGuardada = false;
+          document.getElementById('btnGuardar').textContent = "✓ Guardar";
           // Pre-llenado clínico completo
           document.getElementById('Nombre_Paciente').value = res.data.Nombre_Paciente || '';
           document.getElementById('DNI_Paciente').value = dni;
@@ -728,7 +769,7 @@
           }
         }
       })
-      .catch(err => alert("Error de comunicación: " + err.toString()))
+      .catch(err => alert(mensajeErrorFetch(err)))
       .finally(() => { 
         document.getElementById('btnBuscar').textContent = "Buscar Historial"; 
         document.getElementById('btnBuscar').disabled = false;
@@ -784,7 +825,7 @@
         mostrarConsentimientoYaFirmado(new Date().toLocaleDateString(), res.pdfUrl || "");
       } else { alert("Error: " + res.message); }
     })
-    .catch(err => alert("Error en envío: " + err.toString() + "\n\nSi esto ocurrió por conexión inestable, revisa el historial del paciente antes de volver a intentarlo: el guardado pudo haberse procesado igual en el servidor."))
+    .catch(err => alert(mensajeErrorFetch(err) + "\n\nSi el guardado sí llegó a procesarse en el servidor antes del corte, no se duplicará: revisa el historial antes de reintentar."))
     .finally(() => {
       envioEnCurso = false;
       if(btn) { btn.disabled = false; btn.textContent = "✓ Registrar Solo Firma Actual"; }
@@ -804,6 +845,16 @@
     if(esModoPaciente) {
       return guardarSoloConsentimiento();
     }
+
+    // FIX BUG "evolución duplicada tras firmar": si esta ficha ya se guardó en la sesión
+    // actual (ej. el profesional guardó, firmó por QR o en el dispositivo, y volvió a esta
+    // pantalla), este mismo botón ya no reenvía el formulario: solo vuelve al inicio.
+    if(evolucionYaGuardada) {
+      cambiarPantalla('screen-home');
+      document.getElementById('dniSearch').value = '';
+      return;
+    }
+
     if(envioEnCurso) return; // Ya hay un guardado en curso: ignorar clics repetidos.
 
     const dniPac = document.getElementById('DNI_Paciente').value.trim();
@@ -819,7 +870,9 @@
     function liberarBoton() {
       envioEnCurso = false;
       btnGuardar.disabled = false;
-      btnGuardar.textContent = "✓ Guardar";
+      // Si el guardado tuvo éxito, el texto ya quedó como "✓ Ir al Inicio" (ver .then());
+      // si falló, vuelve a "✓ Guardar" para permitir reintentar.
+      btnGuardar.textContent = evolucionYaGuardada ? "✓ Ir al Inicio" : "✓ Guardar";
     }
 
     const expPreviaNode = document.querySelector('input[name="Experiencia_Previa"]:checked');
@@ -874,7 +927,9 @@
     .then(res => res.json())
     .then(res => {
       if(res.success) {
+        evolucionYaGuardada = true; // A partir de ahora este botón solo vuelve al inicio.
         puedeFirmar = true; // Ya se guardó: la carpeta y la fila del paciente ya existen.
+        btnGuardar.textContent = "✓ Ir al Inicio";
         if(res.necesitaFirma) {
           mostrarPopupFirmaPendiente();
         } else {
@@ -886,7 +941,7 @@
         alert("Error devuelto por el servidor: " + res.message);
       }
     })
-    .catch(err => alert("Error crítico al subir: " + err.toString() + "\n\nSi esto ocurrió por conexión inestable, revisa el historial del paciente antes de volver a intentarlo: el guardado pudo haberse procesado igual en el servidor."))
+    .catch(err => alert(mensajeErrorFetch(err) + "\n\nSi el guardado sí llegó a procesarse en el servidor antes del corte, no se duplicará: revisa el historial antes de reintentar."))
     .finally(liberarBoton);
   }
 
