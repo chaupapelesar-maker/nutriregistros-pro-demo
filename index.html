@@ -117,6 +117,12 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   }
   .dash-container h2 { font-family: 'Fraunces', serif; color: var(--green-deep); margin-top: 0; text-align: center; }
+  .home-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+  /* Solo el campo que contiene la fila de radio buttons se centra (ej. "Experiencia previa").
+     Se usa :has() en vez de aplicarlo a .field en general, para no descentrar el resto de
+     los campos de texto de toda la ficha. */
+  .field:has(.radio-row){ display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .field:has(.radio-row) .radio-row{ justify-content:center; }
   .search-box {
     background: #FBF8F2;
     border: 1px solid var(--line);
@@ -171,6 +177,7 @@
     border-radius:var(--radius); background:var(--panel); color:var(--ink);
   }
   textarea{resize:vertical;min-height:70px;}
+  #DNI_Paciente:read-only, #Nombre_Paciente:read-only{ background:#EFECE5; color:var(--ink-soft); cursor:not-allowed; }
 
   /* TABLAS EXTENDIDAS */
   .antro-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px;}
@@ -258,7 +265,7 @@
 
   <div class="app-screen" id="screen-home">
     <div class="dash-container">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="home-header">
         <h2 style="margin:0;">Panel de Gestión Clínica</h2>
         <button class="btn ghost" type="button" style="width:auto; padding:8px 16px; font-size:13px;" onclick="cerrarSesion()">🔒 Salir</button>
       </div>
@@ -334,16 +341,24 @@
       <p class="section-sub">Métricas de control evolutivo.</p>
       <table class="antro-table">
         <thead>
-          <tr><th>Medición</th><th class="current">Ingreso</th><th>1er control</th><th>2do control</th></tr>
+          <tr>
+            <th rowspan="2">Medición</th>
+            <th rowspan="2" class="current">Evolución Actual<br><span style="font-weight:400; font-size:10px; text-transform:none;">(Datos de hoy)</span></th>
+            <th colspan="2">Historial de Controles</th>
+          </tr>
+          <tr>
+            <th id="histHeaderAntro1">— <span style="font-weight:400; font-size:10px; text-transform:none;">(Sin datos)</span></th>
+            <th id="histHeaderAntro2">— <span style="font-weight:400; font-size:10px; text-transform:none;">(Sin datos)</span></th>
+          </tr>
         </thead>
         <tbody>
-          <tr><td>Peso habitual (kg)</td><td class="current"><input type="text" id="Peso_Habitual"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
-          <tr><td>Peso actual (kg)</td><td class="current"><input type="number" id="Peso_Actual" step="0.1"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
-          <tr><td>Estatura (cm)</td><td class="current"><input type="number" id="Estatura" step="1"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
-          <tr><td>IMC (Calculado)</td><td class="current"><input type="text" id="IMC" readonly style="font-weight:bold;"></td><td><input type="text" readonly placeholder="—"></td><td><input type="text" readonly placeholder="—"></td></tr>
-          <tr><td>Circ. cintura (cm)</td><td class="current"><input type="text" id="Circ_Cintura"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
-          <tr><td>Circ. pantorrilla (cm)</td><td class="current"><input type="text" id="Circ_Pantorrilla"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
-          <tr><td>Circ. braquial (cm)</td><td class="current"><input type="text" id="Circ_Braquial"></td><td><input type="text" disabled placeholder="—"></td><td><input type="text" disabled placeholder="—"></td></tr>
+          <tr><td>Peso habitual (kg)</td><td class="current"><input type="text" id="Peso_Habitual" placeholder="Ingresar..."></td><td id="hist1_Peso_Habitual">—</td><td id="hist2_Peso_Habitual">—</td></tr>
+          <tr><td>Peso actual (kg)</td><td class="current"><input type="number" id="Peso_Actual" step="0.1" placeholder="Ingresar..."></td><td id="hist1_Peso_Actual">—</td><td id="hist2_Peso_Actual">—</td></tr>
+          <tr><td>Estatura (cm)</td><td class="current"><input type="number" id="Estatura" step="1" placeholder="Ingresar..."></td><td id="hist1_Estatura">—</td><td id="hist2_Estatura">—</td></tr>
+          <tr><td>IMC (Calculado)</td><td class="current"><input type="text" id="IMC" readonly style="font-weight:bold;" placeholder="Ingresar..."></td><td id="hist1_IMC">—</td><td id="hist2_IMC">—</td></tr>
+          <tr><td>Circ. cintura (cm)</td><td class="current"><input type="text" id="Circ_Cintura" placeholder="Ingresar..."></td><td id="hist1_Circ_Cintura">—</td><td id="hist2_Circ_Cintura">—</td></tr>
+          <tr><td>Circ. pantorrilla (cm)</td><td class="current"><input type="text" id="Circ_Pantorrilla" placeholder="Ingresar..."></td><td id="hist1_Circ_Pantorrilla">—</td><td id="hist2_Circ_Pantorrilla">—</td></tr>
+          <tr><td>Circ. braquial (cm)</td><td class="current"><input type="text" id="Circ_Braquial" placeholder="Ingresar..."></td><td id="hist1_Circ_Braquial">—</td><td id="hist2_Circ_Braquial">—</td></tr>
         </tbody>
       </table>
     </div>
@@ -352,17 +367,28 @@
       <p class="section-title">Indicadores bioquímicos</p>
       <p class="section-sub">Resultados analíticos de laboratorio aportados.</p>
       <table class="antro-table">
-        <thead><tr><th>Examen</th><th>Valor</th><th>Rango normal</th><th>Interpretación</th></tr></thead>
+        <thead>
+          <tr>
+            <th rowspan="2">Examen Bioquímico</th>
+            <th rowspan="2" class="current">Resultado Actual</th>
+            <th colspan="2">Historial de Exámenes</th>
+          </tr>
+          <tr>
+            <th id="histHeaderBioq1">— <span style="font-weight:400; font-size:10px; text-transform:none;">(Sin datos)</span></th>
+            <th id="histHeaderBioq2">— <span style="font-weight:400; font-size:10px; text-transform:none;">(Sin datos)</span></th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td>Glicemia</td><td><input type="text" id="Glicemia"></td><td>70–100 mg/dl</td><td><input type="text" id="Glicemia_Interp"></td></tr>
-          <tr><td>Colesterol total</td><td><input type="text" id="Colesterol"></td><td>&lt;200 mg/dl</td><td><input type="text" id="Colesterol_Interp"></td></tr>
-          <tr><td>Triglicéridos</td><td><input type="text" id="Trigliceridos"></td><td>&lt;150 mg/dl</td><td><input type="text" id="Trigliceridos_Interp"></td></tr>
-          <tr><td>HbA1c</td><td><input type="text" id="HbA1c"></td><td>&lt;7%</td><td><input type="text" id="HbA1c_Interp"></td></tr>
-          <tr><td>Otro examen</td><td><input type="text" id="Otro_Examen"></td><td>—</td><td><input type="text" id="Otro_Examen_Interp"></td></tr>
-          <tr><td>Otro examen 2</td><td><input type="text" id="Otro_Examen2"></td><td>—</td><td><input type="text" id="Otro_Examen2_Interp"></td></tr>
-          <tr><td>Otro examen 3</td><td><input type="text" id="Otro_Examen3"></td><td>—</td><td><input type="text" id="Otro_Examen3_Interp"></td></tr>
+          <tr><td>Glicemia</td><td class="current"><input type="text" id="Glicemia" placeholder="Ingresar..."></td><td id="hist1_Glicemia">—</td><td id="hist2_Glicemia">—</td></tr>
+          <tr><td>Colesterol total</td><td class="current"><input type="text" id="Colesterol" placeholder="Ingresar..."></td><td id="hist1_Colesterol">—</td><td id="hist2_Colesterol">—</td></tr>
+          <tr><td>Triglicéridos</td><td class="current"><input type="text" id="Trigliceridos" placeholder="Ingresar..."></td><td id="hist1_Trigliceridos">—</td><td id="hist2_Trigliceridos">—</td></tr>
+          <tr><td>HbA1c</td><td class="current"><input type="text" id="HbA1c" placeholder="Ingresar..."></td><td id="hist1_HbA1c">—</td><td id="hist2_HbA1c">—</td></tr>
+          <tr><td>Otro examen</td><td class="current"><input type="text" id="Otro_Examen" placeholder="Ingresar..."></td><td id="hist1_Otro_Examen">—</td><td id="hist2_Otro_Examen">—</td></tr>
+          <tr><td>Otro examen 2</td><td class="current"><input type="text" id="Otro_Examen2" placeholder="Ingresar..."></td><td id="hist1_Otro_Examen2">—</td><td id="hist2_Otro_Examen2">—</td></tr>
+          <tr><td>Otro examen 3</td><td class="current"><input type="text" id="Otro_Examen3" placeholder="Ingresar..."></td><td id="hist1_Otro_Examen3">—</td><td id="hist2_Otro_Examen3">—</td></tr>
         </tbody>
       </table>
+      <p class="section-sub" style="font-style:italic; margin-top:10px;">* Valores de referencia: Glicemia (70–100 mg/dL), Colesterol total (&lt;200 mg/dL), Triglicéridos (&lt;150 mg/dL), HbA1c (&lt;7%).</p>
     </div>
 
     <div class="panel" id="t5">
@@ -411,11 +437,8 @@
 
     </div>
 
-    <div class="form-actions">
-      <button class="btn ghost" onclick="volverAlHomeOrReset()">← Volver al Inicio</button>
-      <div style="display:flex; gap:10px; justify-content: flex-end;">
-        <button class="btn primary" id="btnGuardar" onclick="enviarFormulario()">✓ Guardar</button>
-      </div>
+    <div class="form-actions" style="justify-content:flex-end;">
+      <button class="btn primary" id="btnGuardar" onclick="enviarFormulario()">✓ Guardar</button>
     </div>
 
   </div>
@@ -466,6 +489,10 @@
   // a esta pantalla, un clic en "Guardar" (pensando que era "salir") creara una segunda
   // evolución idéntica.
   let evolucionYaGuardada = false;
+  // FIX BUG "evolución repetida sin cambios": se activa en cuanto el usuario edita algo
+  // en la ficha (ver listener delegado en DOMContentLoaded). Se resetea a false cada vez
+  // que se carga un paciente (nuevo o buscado), antes de que el profesional toque nada.
+  let formularioModificado = false;
 
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
@@ -516,6 +543,14 @@
     canvas.addEventListener('touchstart', (e) => { drawing = true; e.preventDefault(); });
     canvas.addEventListener('touchend', () => { drawing = false; ctx.beginPath(); });
     canvas.addEventListener('touchmove', dibujarTouch, { passive: false });
+
+    // FIX BUG "evolución repetida sin cambios": un solo listener delegado detecta cualquier
+    // edición real del usuario en la ficha (tipear, tocar un checkbox, elegir una opción).
+    // Los precargados por JS (buscarPaciente, abrirFichaNuevoPaciente) asignan .value/.checked
+    // directamente y NO disparan 'input'/'change', así que no ensucian esta bandera.
+    const fichaHC = document.getElementById('screen-hc');
+    fichaHC.addEventListener('input', () => formularioModificado = true);
+    fichaHC.addEventListener('change', () => formularioModificado = true);
   });
 
   // MANEJO DE PANTALLAS V5
@@ -552,11 +587,14 @@
   function abrirFichaNuevoPaciente() {
     ocultarConsentimientoYaFirmado();
     evolucionYaGuardada = false;
+    formularioModificado = false;
     document.getElementById('btnGuardar').textContent = "✓ Guardar";
     // Limpiar campos para evitar remanentes
     document.querySelectorAll('#screen-hc input:not([type=radio]), #screen-hc textarea').forEach(i => i.value = '');
     document.querySelectorAll('#screen-hc input[type=radio]').forEach(r => r.checked = false);
     document.getElementById('DNI_Paciente').readOnly = false;
+    document.getElementById('Nombre_Paciente').readOnly = false;
+    renderHistorial([]);
     cambiarPantalla('screen-hc');
     cambiarTab('t1');
   }
@@ -672,6 +710,36 @@
     return "Error de comunicación: " + texto;
   }
 
+  // Puebla las columnas de solo lectura "Historial de Controles" (Antropometría) e
+  // "Historial de Exámenes" (Bioquímicos) con hasta 2 controles previos (el más reciente
+  // primero). Si hay menos de 2, las columnas faltantes quedan en "— (Sin datos)".
+  const CAMPOS_HISTORIAL_ANTRO = ['Peso_Habitual','Peso_Actual','Estatura','IMC','Circ_Cintura','Circ_Pantorrilla','Circ_Braquial'];
+  const CAMPOS_HISTORIAL_BIOQ = ['Glicemia','Colesterol','Trigliceridos','HbA1c','Otro_Examen','Otro_Examen2','Otro_Examen3'];
+
+  function renderHistorial(historial) {
+    const etiquetas = ['(Anterior)', '(Previo)'];
+    for(let col = 1; col <= 2; col++) {
+      const control = historial[col - 1];
+      const headerAntro = document.getElementById(`histHeaderAntro${col}`);
+      const headerBioq = document.getElementById(`histHeaderBioq${col}`);
+      if(control) {
+        const etiqueta = `${control.Fecha || '—'} <span style="font-weight:400; font-size:10px; text-transform:none;">${etiquetas[col-1]}</span>`;
+        headerAntro.innerHTML = etiqueta;
+        headerBioq.innerHTML = etiqueta;
+      } else {
+        const sinDatos = '— <span style="font-weight:400; font-size:10px; text-transform:none;">(Sin datos)</span>';
+        headerAntro.innerHTML = sinDatos;
+        headerBioq.innerHTML = sinDatos;
+      }
+      CAMPOS_HISTORIAL_ANTRO.forEach(campo => {
+        document.getElementById(`hist${col}_${campo}`).textContent = (control && control[campo]) ? control[campo] : '—';
+      });
+      CAMPOS_HISTORIAL_BIOQ.forEach(campo => {
+        document.getElementById(`hist${col}_${campo}`).textContent = (control && control[campo]) ? control[campo] : '—';
+      });
+    }
+  }
+
   function bankruptCanvas(c) {
     // Guarda defensiva: si el canvas todavía no tiene dimensiones válidas
     // (por ejemplo, la pestaña 06 nunca se llegó a mostrar), tratarlo como "vacío"
@@ -705,11 +773,13 @@
       .then(res => {
         if(res.success && res.data) {
           evolucionYaGuardada = false;
+          formularioModificado = false;
           document.getElementById('btnGuardar').textContent = "✓ Guardar";
           // Pre-llenado clínico completo
           document.getElementById('Nombre_Paciente').value = res.data.Nombre_Paciente || '';
           document.getElementById('DNI_Paciente').value = dni;
           document.getElementById('DNI_Paciente').readOnly = true; // Proteger ID clave
+          document.getElementById('Nombre_Paciente').readOnly = true; // Proteger nombre de filiación
           document.getElementById('Fecha_Nacimiento').value = res.data.Fecha_Nacimiento || ''; 
           document.getElementById('Edad_Paciente').value = res.data.Edad_Paciente || ''; 
           document.getElementById('Ocupacion_Paciente').value = res.data.Ocupacion_Paciente || '';
@@ -725,27 +795,16 @@
           document.getElementById('Antecedentes_Personales').value = res.data.Antecedentes_Personales || '';
           document.getElementById('Antecedentes_Quirurgicos').value = res.data.Antecedentes_Quirurgicos || '';
           document.getElementById('Antecedentes_Familiares').value = res.data.Antecedentes_Familiares || '';
-          document.getElementById('Peso_Habitual').value = res.data.Peso_Habitual || '';
-          document.getElementById('Peso_Actual').value = res.data.Peso_Actual || '';
-          document.getElementById('Estatura').value = res.data.Estatura || '';
-          document.getElementById('IMC').value = res.data.IMC || '';
-          document.getElementById('Circ_Cintura').value = res.data.Circ_Cintura || '';
-          document.getElementById('Circ_Pantorrilla').value = res.data.Circ_Pantorrilla || '';
-          document.getElementById('Circ_Braquial').value = res.data.Circ_Braquial || '';
-          document.getElementById('Glicemia').value = res.data.Glicemia || '';
-          document.getElementById('Glicemia_Interp').value = res.data.Glicemia_Interp || '';
-          document.getElementById('Colesterol').value = res.data.Colesterol || '';
-          document.getElementById('Colesterol_Interp').value = res.data.Colesterol_Interp || '';
-          document.getElementById('Trigliceridos').value = res.data.Trigliceridos || '';
-          document.getElementById('Trigliceridos_Interp').value = res.data.Trigliceridos_Interp || '';
-          document.getElementById('HbA1c').value = res.data.HbA1c || '';
-          document.getElementById('HbA1c_Interp').value = res.data.HbA1c_Interp || '';
-          document.getElementById('Otro_Examen').value = res.data.Otro_Examen || '';
-          document.getElementById('Otro_Examen_Interp').value = res.data.Otro_Examen_Interp || '';
-          document.getElementById('Otro_Examen2').value = res.data.Otro_Examen2 || '';
-          document.getElementById('Otro_Examen2_Interp').value = res.data.Otro_Examen2_Interp || '';
-          document.getElementById('Otro_Examen3').value = res.data.Otro_Examen3 || '';
-          document.getElementById('Otro_Examen3_Interp').value = res.data.Otro_Examen3_Interp || '';
+
+          // FIX: "Evolución Actual" (antropometría y bioquímicos) ya NO se precarga con la
+          // última visita — queda siempre en blanco para los datos de HOY. Se limpia
+          // explícitamente por si quedó algo tipeado de una búsqueda anterior sin guardar.
+          ['Peso_Habitual','Peso_Actual','Estatura','IMC','Circ_Cintura','Circ_Pantorrilla','Circ_Braquial',
+           'Glicemia','Colesterol','Trigliceridos','HbA1c','Otro_Examen','Otro_Examen2','Otro_Examen3']
+            .forEach(id => document.getElementById(id).value = '');
+
+          renderHistorial(res.data.Historial || []);
+
           document.getElementById('Diagnostico_DNI').value = res.data.Diagnostico_DNI || '';
           document.getElementById('Requerimiento').value = res.data.Requerimiento || '';
           document.getElementById('Macros').value = res.data.Macros || '';
@@ -862,6 +921,20 @@
 
     if(!dniPac || !nomPac) return alert("Faltan datos de filiación del paciente (Nombre y DNI).");
 
+    // FIX BUG 28: si no se detectó ninguna edición real desde que se cargó esta ficha,
+    // guardar generaría una evolución idéntica a la última visita, sin sentido clínico.
+    // Se pide confirmación explícita en vez de bloquear directamente, por si alguna vez
+    // el profesional de verdad quiere registrar un control igual al anterior (ej. un
+    // control de rutina sin cambios).
+    if(!formularioModificado) {
+      const confirmarSinCambios = confirm(
+        "No se detectó ningún cambio en la ficha respecto a la última visita cargada.\n\n" +
+        "Si solo entraste a consultar datos, usa '← Salir / Buscar otro paciente' (arriba) en vez de Guardar.\n\n" +
+        "¿Guardar de todas formas un control idéntico al anterior?"
+      );
+      if(!confirmarSinCambios) return;
+    }
+
     envioEnCurso = true;
     const btnGuardar = document.getElementById('btnGuardar');
     btnGuardar.disabled = true;
@@ -899,19 +972,12 @@
       circPantorrilla: document.getElementById('Circ_Pantorrilla').value,
       circBraquial: document.getElementById('Circ_Braquial').value,
       glicemia: document.getElementById('Glicemia').value,
-      glicemiaInterp: document.getElementById('Glicemia_Interp').value,
       colesterol: document.getElementById('Colesterol').value,
-      colesterolInterp: document.getElementById('Colesterol_Interp').value,
       trigliceridos: document.getElementById('Trigliceridos').value,
-      trigliceridosInterp: document.getElementById('Trigliceridos_Interp').value,
       hbA1c: document.getElementById('HbA1c').value,
-      hbA1cInterp: document.getElementById('HbA1c_Interp').value,
       otroExamen: document.getElementById('Otro_Examen').value,
-      otroExamenInterp: document.getElementById('Otro_Examen_Interp').value,
       otroExamen2: document.getElementById('Otro_Examen2').value,
-      otroExamen2Interp: document.getElementById('Otro_Examen2_Interp').value,
       otroExamen3: document.getElementById('Otro_Examen3').value,
-      otroExamen3Interp: document.getElementById('Otro_Examen3_Interp').value,
       diagnosticoDNI: document.getElementById('Diagnostico_DNI').value,
       requerimiento: document.getElementById('Requerimiento').value,
       macros: document.getElementById('Macros').value,
