@@ -524,6 +524,11 @@
       if (e.key === 'Enter') validarPIN();
     });
 
+    // Detectar Enter en campo de búsqueda de DNI (antes solo funcionaba el botón)
+    document.getElementById('dniSearch').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') buscarPaciente();
+    });
+
     const pesoInput = document.getElementById('Peso_Actual');
     const tallaInput = document.getElementById('Estatura');
     if(pesoInput && tallaInput) {
